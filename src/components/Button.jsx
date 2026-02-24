@@ -1,7 +1,12 @@
 import React from "react";
-function Button({ variant = "primary", children, ...props }) {
+
+function Button({ variant = "primary", children, className = "", ...props }) {
+  const baseClass = "btn";
+  const variantClass = `btn-${variant}`;
+  const fullClassName = `${baseClass} ${variantClass} ${className}`.trim();
+
   return (
-    <button className={`btn btn-${variant}`} {...props}>
+    <button className={fullClassName} {...props}>
       {children}
     </button>
   );
