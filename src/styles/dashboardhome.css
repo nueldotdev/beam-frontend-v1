@@ -1,0 +1,280 @@
+.ai-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+}
+
+.ai-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.ai-title {
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  padding: 0.8rem;
+  cursor: pointer;
+  transition: color 0.2s, border-bottom 0.2s;
+}
+
+.icon-btn.active {
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 0.8rem;
+  background-color: #dde7ff;
+  color: #1e40af;
+}
+
+/* .icon-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.icon-btn.active {
+  background: #f0f0f0;
+} */
+
+.ai-content {
+  flex: 1;
+  padding: 16px;
+}
+
+.assistant-home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.assistant-icon {
+  margin-bottom: 20px;
+  color: #2563eb;
+}
+
+.suggestions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.suggestion-card {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e5e5;
+  background: white;
+  cursor: pointer;
+  text-align: left;
+}
+
+.suggestion-card:hover {
+  background: #f9fafb;
+}
+
+.ai-input-container {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid #eee;
+}
+
+.ai-input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.send-btn {
+  border: none;
+  background: #2563eb;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ai-footer {
+  text-align: center;
+  font-size: 12px;
+  color: gray;
+  padding-bottom: 10px;
+}
+.main-video-area {
+background-color: #ffffff;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 30px;
+  padding: 20px;
+}
+
+/* Zoom Action Buttons */
+.zoom-actions {
+  display: flex;
+  text-align: left;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.zoom-btn {
+  padding: 20px 10px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+.zoom-actions h4 {
+font-weight: 100;
+font-family: "Gilroy", monospace;
+  color: #333;
+}
+
+/* Zoom-like colors */
+.new-meeting {
+  background: #0e71eb;
+  color: white;
+}
+
+.join-meeting {
+  background: #2d8cff;
+  color: white;
+}
+
+.schedule-meeting {
+  color: #2563eb;
+  background: #f1f1f1;
+}
+
+.zoom-btn:hover {
+  opacity: 0.85;
+}
+
+/* Medium Video Container */
+.main-video-container.medium,
+.screen-share-container.medium {
+  width: 500px;
+  height: 300px;
+  background: transparent;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.video-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2563eb, #1e40af, #3b82f6);
+  background-size: 200% 200%;
+  border-radius: 12px;
+  color: #ffffff;
+
+  /* animations */
+  animation: 
+    gradientShift 8s ease infinite,
+    floatSoft 4s ease-in-out infinite,
+    fadeIn 0.6s ease;
+  
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.25);
+}
+
+/* gradient movement */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* floating motion */
+@keyframes floatSoft {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* smooth entry */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.avatar-large {
+  width: 90px;
+  height: 90px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 32px;
+  font-weight: bold;
+
+  animation: pulseGlow 3s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(255,255,255,0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255,255,255,0.35);
+  }
+}
+
+/* Avatar */
+.avatar-large {
+  width: 90px;
+  height: 90px;
+  background: #0e71eb;
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Info */
+.video-info {
+  position: absolute;
+  bottom: 10px;
+  left: 15px;
+  color: white;
+  font-size: 14px;
+}

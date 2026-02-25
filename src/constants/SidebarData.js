@@ -17,13 +17,15 @@ export const SidebarData = [
         badge: null,
         icon: HiOutlineHome,
         "icon.active": HiHome,
+        routes:'home'
     },
     {
         id:"meetings",
         label:"Meetings",
         badge: null,
         "icon.active": IoVideocam,
-        icon: IoVideocamOutline
+        icon: IoVideocamOutline,
+        routes:'meetings'
 
     },
     {
@@ -31,6 +33,7 @@ export const SidebarData = [
         label:"TeamChat",
         icon:  HiOutlineChatBubbleLeftRight,
         "icon.active": HiChatBubbleLeftRight,
+        routes:'chat',
         badge: null
     },
    
@@ -39,12 +42,14 @@ export const SidebarData = [
         label:"Settings",
         icon: IoSettingsSharp,
         "icon.active": IoSettingsSharp,
+            routes:'settings',
         badge: null
     },
     {
         id:"notifications",
         label:"Notifications",
         "icon.active": IoNotifications,
+        routes:'notifications',
         icon: IoNotificationsOutline,
         badge:null  
     },
