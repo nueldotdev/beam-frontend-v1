@@ -11,7 +11,7 @@ import {
   Star,
 } from "lucide-react";
 import Button from "../components/Button";
-import "../styles/Home.css";
+import "../styles/home.css";
 import logo from "../assets/Logo.png";
 import gridImage1 from "../assets/grid1.jpg";
 import gridImage2 from "../assets/grid2.jpg";
