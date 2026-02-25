@@ -9,7 +9,7 @@ function DashBoard() {
   const [isScreenSharing, setIsScreenSharing] = useState(false)
   const [showParticipants, setShowParticipants] = useState(true)
 
-  // Mock participants data
+  // Mock participants data(JS file)
   const participants = [
     { id: 1, name: 'You', isMuted: isMuted, videoOff: cameraOff, isPresenter: true },
     { id: 2, name: 'John Smith', isMuted: false, videoOff: false },

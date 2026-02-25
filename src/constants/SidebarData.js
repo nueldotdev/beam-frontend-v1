@@ -1,5 +1,6 @@
 import React from "react";
 import { IoSettingsSharp, } from "react-icons/io5";
+import { LuLogOut } from "react-icons/lu";
 import { IoVideocamOutline, IoVideocam } from "react-icons/io5";
 import { HiOutlineChatBubbleLeftRight , HiChatBubbleLeftRight} from "react-icons/hi2";
 import { HiOutlineHome , HiHome } from "react-icons/hi";
@@ -46,6 +47,13 @@ export const SidebarData = [
         "icon.active": IoNotifications,
         icon: IoNotificationsOutline,
         badge:null  
+    },
+    {
+        id:"logout",
+        label:"Logout",
+        icon: LuLogOut,
+        path: "/login",
+        badge: null
     }
 
 ]

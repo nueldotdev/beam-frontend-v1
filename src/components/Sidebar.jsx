@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import '../styles/sidebar.css'
+import { Link } from 'react-router-dom'
 import { SidebarData } from '../constants/SidebarData'
 
 function Sidebar() {
@@ -25,7 +26,7 @@ function Sidebar() {
 
     {/* Main navigation */}
         <nav className="sidebar-nav">
-          {SidebarData.filter(item => !['settings', 'help'].includes(item.id)).map((item) => (
+          {SidebarData.filter(item => !['logout', 'help'].includes(item.id)).map((item) => (
             <button
             key={item.id}
             className={`nav-item ${activeItem === item.id ? 'active' : ''}`}
@@ -49,26 +50,22 @@ function Sidebar() {
 
         {/* Bottom navigation */}
         <nav className="sidebar-nav-bottom">
-          {SidebarData.filter(item => ['settings', 'help'].includes(item.id)).map((item) => (
+          {SidebarData.filter(item => ['logout'].includes(item.id)).map((item) => (
+
+            <Link to={item.path || '#'}>
             <button
             key={item.id}
             className={`nav-item ${activeItem === item.id ? 'active' : ''}`}
             onClick={() => setActiveItem(item.id)}
             >
             <span className="nav-icon">{typeof item.icon === 'string' ? item.icon : React.createElement(activeItem === item.id && item['icon.active'] ? item['icon.active'] : item.icon)}</span>
+            {item.label}
             </button>
+            </Link>
           ))}
         </nav>
 
-        {/* Profile section */}
-      {/* <div className="sidebar-profile">
-         <div className="profile-avatar">JD</div>
-         <div className={`profile-info ${collapsed ? 'hide' : ''}`}>
-          <p className="profile-name">John Doe</p>
-          <p className="profile-status">Online</p>
-        </div>
-      </div> */}
-
+      
     </div>
   )
 }
