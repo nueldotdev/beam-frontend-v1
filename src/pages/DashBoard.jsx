@@ -8,15 +8,10 @@ import Chat from '../components/Chat'
 import DashboardTabs from '../components/DashboardTabs'
 import DashboardHome from '../components/DashboardHome'
 import genimage from '../assets/dashboard-images/generative-aiicon.png'
+import Meetings from "../pages/Meetings"
+import LiveMeeting from "../components/LiveMeeting"
 
 function DashBoard() {
-  const [isMuted, setIsMuted] = useState(false)
-  const [cameraOff, setCameraOff] = useState(false)
-  const [isScreenSharing, setIsScreenSharing] = useState(false)
-  const [showParticipants, setShowParticipants] = useState(true)
-  const toggleMute = () => setIsMuted(!isMuted)
-  const toggleCamera = () => setCameraOff(!cameraOff)
-  const toggleScreenShare = () => setIsScreenSharing(!isScreenSharing)
 
    const profile = {
       name: "John Doe",
@@ -46,9 +41,10 @@ function DashBoard() {
 
       <div className="dashboard-content">
         <Routes>
-          {/* Default redirect when /dashboard is hit */}
-            <Route path="/" element={<Navigate to="home" />} />
-          <Route path="home" element={<DashboardHome />} />
+          <Route path="/home" element={<DashboardHome />} />
+          <Route path='/meetings' element={<Meetings/>} />
+          <Route path='/chat' element={<Chat/>}/>
+          <Route path="/livemeeting" element={<LiveMeeting />} />
         </Routes>
       </div>
 

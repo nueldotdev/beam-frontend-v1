@@ -4,80 +4,93 @@ import beamlogo from '../assets/dashboard-images/beamlogo.png'
 import { Link } from 'react-router-dom'
 import { SidebarData } from '../constants/SidebarData'
 import { useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 function Sidebar() {
-  const [activeItem, setActiveItem] = useState('dashboard')
   const [collapsed, setCollapsed] = useState(false)
-   const navigate = useNavigate();
 
- 
-
-  const bottomItems = [
-    { id: 'settings', icon: '⚙️', label: 'Settings', badge: null },
-    { id: 'help', icon: '❓', label: 'Help', badge: null },
-  ]
+  const navigate = useNavigate();
+  const location = useLocation(); // ✅ REQUIRED
 
   return (
     <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
-      {/* Header */}
+
       <div className="sidebar-header">
         <div className={`logo ${collapsed ? 'hide' : ''}`}>
-            <img src={beamlogo} className='logo-icon' alt="Beam Logo" />
+          <img src={beamlogo} className='logo-icon' alt="Beam Logo" />
         </div>
-       
       </div>
 
-    {/* Main navigation */}
-    
+      {/* Main navigation */}
+     <nav className="sidebar-nav">
+  {SidebarData
+    .filter(item => !['logout', 'help'].includes(item.id))
+    .map((item) => {
 
-<nav className="sidebar-nav">
-  {SidebarData.filter(item => !['logout', 'help'].includes(item.id)).map((item) => (
-    <button
-      key={item.id}
-      className={`nav-item ${activeItem === item.id ? 'active' : ''}`}
-      onClick={() => {
-        setActiveItem(item.id);
-        navigate(item.route); // <-- Navigate to route
-      }}
-      title={item.label}
-    >
-      <span className="nav-icon">
-        {typeof item.icon === 'string'
-          ? item.icon
-          : React.createElement(
-              activeItem === item.id && item['icon.active'] ? item['icon.active'] : item.icon
-            )}
-      </span>
-      <span className={`nav-label ${collapsed ? 'hide' : ''}`}>
-        {item.label}
-      </span>
-      {item.badge && (
-        <span className={`badge ${collapsed ? 'badge-small' : ''}`}>
-          {item.badge}
-        </span>
-      )}
-    </button>
-  ))}
+      const isActive = location.pathname === item.path;
+
+      return (
+        <Link
+          key={item.id}
+          to={item.path}
+          className={`nav-item ${isActive ? 'active' : ''}`}
+        >
+          <span className="nav-icon">
+            {typeof item.icon === 'string'
+              ? item.icon
+              : React.createElement(
+                  isActive && item['icon.active']
+                    ? item['icon.active']
+                    : item.icon
+                )}
+          </span>
+
+          {!collapsed && (
+            <span className="nav-label">
+              {item.label}
+            </span>
+          )}
+
+          {item.badge && !collapsed && (
+            <span className="badge">
+              {item.badge}
+            </span>
+          )}
+        </Link>
+      );
+    })}
 </nav>
 
-        {/* Bottom navigation */}
-        <nav className="sidebar-nav-bottom">
-          {SidebarData.filter(item => ['logout'].includes(item.id)).map((item) => (
+      {/* Bottom navigation */}
+      <nav className="sidebar-nav-bottom">
+  {SidebarData
+    .filter(item => item.id === 'logout')
+    .map((item) => {
 
-            <Link to={item.path || '#'}>
-            <button
-            key={item.id}
-            className={`nav-item ${activeItem === item.id ? 'active' : ''}`}
-            onClick={() => setActiveItem(item.id)}
-            >
-            <span className="nav-icon">{typeof item.icon === 'string' ? item.icon : React.createElement(activeItem === item.id && item['icon.active'] ? item['icon.active'] : item.icon)}</span>
-            {item.label}
-            </button>
-            </Link>
-          ))}
-        </nav>
+      const isActive = location.pathname === item.path;
 
-      
+      return (
+        <Link
+          key={item.id}
+          to={item.path}
+          className={`nav-item ${isActive ? 'active' : ''}`}
+        >
+          <span className="nav-icon">
+            {typeof item.icon === 'string'
+              ? item.icon
+              : React.createElement(
+                  isActive && item['icon.active']
+                    ? item['icon.active']
+                    : item.icon
+                )}
+          </span>
+
+          {!collapsed && item.label}
+        </Link>
+      );
+    })}
+</nav>
+
     </div>
   )
 }

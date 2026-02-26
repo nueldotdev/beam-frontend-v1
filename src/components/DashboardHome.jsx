@@ -20,16 +20,16 @@ function DashboardHome() {
   {/* Zoom Quick Actions */}
   <div className="zoom-actions">
     <button className="zoom-btn new-meeting">
-     <VideoIcon size={40} /> </button>
-     <h4>New Meeting</h4>
+     <VideoIcon size={35}  /> </button>
+     <h4>Host</h4>
     <button className="zoom-btn join-meeting">
-        <PlusIcon size={40} />
+        <PlusIcon size={35} />
      </button>
-     <h4>Join Meeting</h4>
+     <h4>Join</h4>
     <button className="zoom-btn schedule-meeting">
-     <CalendarSearch size={40} />
+     <CalendarSearch size={35} />
      </button>
-     <h4>Schedule Meeting</h4>
+     <h4>Schedule</h4>
   </div>
 
   {/* Video Section */}

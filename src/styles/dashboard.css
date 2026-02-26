@@ -2,6 +2,7 @@
 .dashboard-wrapper {
   display: flex;
   height: 100vh;
+
   background: linear-gradient(90deg, hsla(223, 100%, 99%, 1) 0%, hsla(222, 100%, 93%, 1) 100%);
   overflow: hidden;
 }
@@ -19,15 +20,15 @@
 
 .dashboard-header {
   padding: 0px 10px;
+ border-left: 1px solid #e5e7eb; /* modern subtle border */
   background-color: transparent;
-  border-bottom: 1px solid #333333;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
   border-radius: 0 0 12px 12px;
 }
-
 .dashboard-header h1 {
   font-size: 24px;
   font-weight: 600;
@@ -88,6 +89,7 @@
 .dashboard-content {
   flex: 1;
   width: 100%;
+  border-left: 1px solid #e5e7eb; /* modern subtle border */
   background: transparent;
   border-radius: 12px;
   display: flex;

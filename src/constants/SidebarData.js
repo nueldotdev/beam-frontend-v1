@@ -1,5 +1,5 @@
 import React from "react";
-import { IoSettingsSharp, } from "react-icons/io5";
+import { IoDocument, IoDocumentOutline, IoSettingsSharp, } from "react-icons/io5";
 import { LuLogOut } from "react-icons/lu";
 import { IoVideocamOutline, IoVideocam } from "react-icons/io5";
 import { HiOutlineChatBubbleLeftRight , HiChatBubbleLeftRight} from "react-icons/hi2";
@@ -17,7 +17,7 @@ export const SidebarData = [
         badge: null,
         icon: HiOutlineHome,
         "icon.active": HiHome,
-        routes:'home'
+        path:'/dashboard/home'
     },
     {
         id:"meetings",
@@ -25,7 +25,7 @@ export const SidebarData = [
         badge: null,
         "icon.active": IoVideocam,
         icon: IoVideocamOutline,
-        routes:'meetings'
+        path:'/dashboard/meetings'
 
     },
     {
@@ -33,7 +33,7 @@ export const SidebarData = [
         label:"TeamChat",
         icon:  HiOutlineChatBubbleLeftRight,
         "icon.active": HiChatBubbleLeftRight,
-        routes:'chat',
+        path:'/dashboard/chat',
         badge: null
     },
    
@@ -42,15 +42,15 @@ export const SidebarData = [
         label:"Settings",
         icon: IoSettingsSharp,
         "icon.active": IoSettingsSharp,
-            routes:'settings',
+        path :'/dashboard/settings',
         badge: null
     },
     {
-        id:"notifications",
-        label:"Notifications",
-        "icon.active": IoNotifications,
-        routes:'notifications',
-        icon: IoNotificationsOutline,
+        id:"docs",
+        label:"Docs",
+        "icon.active": IoDocument,
+        path:'/dashboard/docs',
+        icon: IoDocumentOutline,
         badge:null  
     },
     {
