@@ -14,6 +14,7 @@ import {
 import Logo from "../assets/Logo.png";
 import Button from "../components/Button";
 import Input from "../components/Input";
+import { register } from "../utils/apicalls";
 import "../styles/auth.css";
 
 // Simple Toast Component
@@ -70,7 +71,6 @@ const Signup = () => {
     setPasswordError(validatePassword(newPassword));
   };
 
-  // Signup handler - READY FOR API INTEGRATION
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -88,31 +88,24 @@ const Signup = () => {
     setLoading(true);
     setError("");
 
-    // TODO: Replace with actual API call
-    // Example API call structure:
-    /*
     try {
-      const response = await fetch("/api/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstName: formData.firstName.trim(),
-          lastName: formData.lastName.trim(),
-          email: formData.email.trim(),
-          password: formData.password,
-        }),
-      });
+      // Prepare user data for API
+      const userData = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+      };
 
-      const data = await response.json();
+      // Call the register API
+      const response = await register(userData);
 
-      if (!response.ok) {
-        throw new Error(data.message || "Signup failed");
-      }
+      console.log("Signup successful:", response);
 
       // Show success message
-      setToast("🎉 Account created! Please check your email to verify your account.");
+      setToast(
+        "🎉 Account created successfully! Please check your email to verify your account.",
+      );
 
       // Reset form
       setFormData({
@@ -123,34 +116,21 @@ const Signup = () => {
         agreeToTerms: false,
       });
 
-      // Navigate to verification page after delay
+      // Navigate to login page after delay
       setTimeout(() => {
-        navigate("/verify-email", {
-          state: { email: formData.email },
+        navigate("/login", {
+          state: {
+            message: "Account created successfully! Please log in.",
+            email: formData.email,
+          },
         });
       }, 3000);
-
     } catch (err) {
       console.error("Signup error:", err);
       setError(err.message || "Signup failed. Please try again.");
     } finally {
       setLoading(false);
     }
-    */
-
-    // Temporary placeholder - REMOVE THIS WHEN API IS READY
-    console.log("Signup would be attempted with:", {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      password: formData.password,
-    });
-
-    // This timeout is just to show loading state - REMOVE WHEN API IS READY
-    setTimeout(() => {
-      setLoading(false);
-      setError("API not connected yet. Please integrate with backend.");
-    }, 1000);
   };
 
   return (

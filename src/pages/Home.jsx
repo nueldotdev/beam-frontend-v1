@@ -160,8 +160,8 @@ const Home = () => {
               <img src={gridImage9} alt="Meeting visual" />
             </div>
           </div>
-          <div className="visual-overlay">
-            <div className="visual-badge">
+          <div className="hero-visual-overlay">
+            <div className="hero-visual-badge">
               <Wifi size={20} />
               <span>Low Bandwidth Optimized</span>
             </div>

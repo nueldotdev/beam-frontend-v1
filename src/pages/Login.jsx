@@ -13,6 +13,7 @@ import {
 import logo from "../assets/Logo.png";
 import Button from "../components/Button";
 import Input from "../components/Input";
+import { login } from "../utils/apicalls";
 import "../styles/auth.css";
 
 const Login = () => {
@@ -44,7 +45,6 @@ const Login = () => {
     }
   }, [formData.rememberMe, formData.email]);
 
-  // Login handler - READY FOR API INTEGRATION
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -63,26 +63,17 @@ const Login = () => {
 
     setLoading(true);
 
-    // TODO: Replace with actual API call
-    // Example API call structure:
-    /*
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email.trim(),
-          password: formData.password,
-        }),
-      });
+      // Prepare login credentials
+      const credentials = {
+        email: formData.email.trim(),
+        password: formData.password,
+      };
 
-      const data = await response.json();
+      // Call the login API
+      const response = await login(credentials);
 
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
-      }
+      console.log("Login successful:", response);
 
       // Reset failed attempts on success
       setFailedAttempts(0);
@@ -92,35 +83,24 @@ const Login = () => {
         localStorage.setItem("rememberedEmail", formData.email);
       }
 
-      // Store auth data
-      if (data.token) {
-        localStorage.setItem("authToken", data.token);
+      // Store token if returned
+      if (response.token) {
+        localStorage.setItem("authToken", response.token);
       }
 
-      if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
+      // Store user data if returned
+      if (response.user) {
+        localStorage.setItem("user", JSON.stringify(response.user));
       }
 
       navigate("/dashboard");
     } catch (err) {
-      setFailedAttempts(prev => prev + 1);
-      setError(err.message || "Login failed");
+      console.error("Login error:", err);
+      setFailedAttempts((prev) => prev + 1);
+      setError(err.message || "Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
-    */
-
-    // Temporary placeholder - REMOVE THIS WHEN API IS READY
-    console.log("Login would be attempted with:", {
-      email: formData.email,
-      password: formData.password,
-    });
-
-    // This timeout is just to show loading state - REMOVE WHEN API IS READY
-    setTimeout(() => {
-      setLoading(false);
-      setError("API not connected yet. Please integrate with backend.");
-    }, 1000);
   };
 
   // Google sign-in handler - READY FOR API INTEGRATION
@@ -132,24 +112,6 @@ const Login = () => {
 
     setError("");
     setLoading(true);
-
-    // TODO: Replace with actual Google OAuth/API call
-    // Example:
-    /*
-    try {
-      // Your Google sign-in logic here
-      // This might redirect to Google OAuth or call your backend
-      
-      // After successful Google auth:
-      setFailedAttempts(0);
-      navigate("/dashboard");
-    } catch (err) {
-      setFailedAttempts(prev => prev + 1);
-      setError(err.message || "Google sign-in failed");
-    } finally {
-      setLoading(false);
-    }
-    */
 
     // Temporary placeholder - REMOVE THIS WHEN API IS READY
     console.log("Google sign-in would be attempted");
