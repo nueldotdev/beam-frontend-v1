@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Button from "../components/Button";
 import "../styles/home.css";
-import logo from "../assets/Logo.png";
+import logo from "../assets/logo/Beam.png";
 import gridImage1 from "../assets/grid1.jpg";
 import gridImage2 from "../assets/grid2.jpg";
 import gridImage3 from "../assets/grid3.jpg";
@@ -68,7 +68,6 @@ const Home = () => {
         <div className="nav-container">
           <div className="nav-logo">
             <img src={logo} alt="Beam" className="nav-logo-img" />
-            <span className="logo-badge">AI</span>
           </div>
 
           <div className="nav-auth-buttons">
@@ -338,7 +337,6 @@ const Home = () => {
             <div className="footer-brand">
               <div className="footer-logo-wrapper">
                 <img src={logo} alt="Beam" className="footer-logo-img" />
-                <span className="footer-logo-badge">AI</span>
               </div>
               <p className="footer-tagline">
                 AI-powered video conferencing for better learning

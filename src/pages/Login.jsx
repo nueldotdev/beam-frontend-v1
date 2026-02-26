@@ -10,7 +10,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import logo from "../assets/Logo.png";
+import logo from "../assets/logo/Beam.png";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { login } from "../utils/apicalls";

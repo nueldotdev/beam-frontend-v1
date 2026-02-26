@@ -11,7 +11,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import Logo from "../assets/Logo.png";
+import Logo from "../assets/logo/Beam.png";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { register } from "../utils/apicalls";
