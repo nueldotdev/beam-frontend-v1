@@ -111,6 +111,26 @@ p,
   color: white;
 }
 
+.btn-danger {
+  background-color: #dc2626;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #991b1b;
+  transform: scale(1.05);
+}
+
+.btn-success {
+  background-color: #059669;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #047857;
+  transform: scale(1.05);
+}
+
 /* INPUTS */
 .input {
   width: 100%;
