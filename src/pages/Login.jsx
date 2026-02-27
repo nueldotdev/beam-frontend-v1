@@ -13,7 +13,7 @@ import {
 import logo from "../assets/logo/Beam.png";
 import Button from "../components/Button";
 import Input from "../components/Input";
-import { login } from "../utils/apicalls";
+import { login, getGoogleAuthUrl, googleLogin } from "../utils/apicalls";
 import "../styles/auth.css";
 
 const Login = () => {
@@ -28,15 +28,52 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
 
-  // Check for saved email from "remember me"
+  // Handle Google redirect
   useEffect(() => {
-    const savedEmail = localStorage.getItem("rememberedEmail");
-    if (savedEmail) {
-      setFormData((prev) => ({ ...prev, email: savedEmail, rememberMe: true }));
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+
+    if (code) {
+      handleGoogleCallback(code);
     }
   }, []);
 
-  // Handle "remember me"
+  const handleGoogleCallback = async (code) => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await googleLogin(code);
+
+      if (data.token) {
+        localStorage.setItem("authToken", data.token);
+      }
+
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      navigate("/");
+    } catch (err) {
+      console.error("Google callback error:", err);
+      setError(err.message || "Google authentication failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Remember Me
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("rememberedEmail");
+    if (savedEmail) {
+      setFormData((prev) => ({
+        ...prev,
+        email: savedEmail,
+        rememberMe: true,
+      }));
+    }
+  }, []);
+
   useEffect(() => {
     if (formData.rememberMe && formData.email) {
       localStorage.setItem("rememberedEmail", formData.email);
@@ -45,17 +82,16 @@ const Login = () => {
     }
   }, [formData.rememberMe, formData.email]);
 
+  // Normal Login
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    // Basic validation
     if (!formData.email || !formData.password) {
       setError("Please fill in all fields");
       return;
     }
 
-    // Basic rate limiting
     if (failedAttempts >= 5) {
       setError("Too many failed attempts. Please try again later.");
       return;
@@ -64,65 +100,58 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Prepare login credentials
       const credentials = {
         email: formData.email.trim(),
         password: formData.password,
       };
 
-      // Call the login API
       const response = await login(credentials);
 
-      console.log("Login successful:", response);
-
-      // Reset failed attempts on success
       setFailedAttempts(0);
 
-      // Handle remember me
       if (formData.rememberMe) {
         localStorage.setItem("rememberedEmail", formData.email);
       }
 
-      // Store token if returned
       if (response.token) {
         localStorage.setItem("authToken", response.token);
       }
 
-      // Store user data if returned
       if (response.user) {
         localStorage.setItem("user", JSON.stringify(response.user));
       }
 
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
-      console.error("Login error:", err);
       setFailedAttempts((prev) => prev + 1);
-      setError(err.message || "Login failed. Please check your credentials.");
+      setError(err.message || "Login failed. Please check credentials.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Google sign-in handler - READY FOR API INTEGRATION
-  const handleGoogleSignIn = () => {
+  // Google Sign In
+  const handleGoogleSignIn = async () => {
     if (failedAttempts >= 5) {
       setError("Too many failed attempts. Please try again later.");
       return;
     }
 
-    setError("");
-    setLoading(true);
+    try {
+      setError("");
+      setLoading(true);
 
-    // Temporary placeholder - REMOVE THIS WHEN API IS READY
-    console.log("Google sign-in would be attempted");
+      const data = await getGoogleAuthUrl();
 
-    // This timeout is just to show loading state - REMOVE WHEN API IS READY
-    setTimeout(() => {
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("Google auth URL not received");
+      }
+    } catch (err) {
+      setError(err.message || "Google sign-in failed");
       setLoading(false);
-      setError(
-        "Google sign-in not configured yet. Please integrate with backend.",
-      );
-    }, 1000);
+    }
   };
 
   const isAnyLoading = loading;

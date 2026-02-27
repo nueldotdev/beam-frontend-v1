@@ -103,9 +103,7 @@ const Signup = () => {
       console.log("Signup successful:", response);
 
       // Show success message
-      setToast(
-        "🎉 Account created successfully! Please check your email to verify your account.",
-      );
+      setToast("🎉 Account created successfully!");
 
       // Reset form
       setFormData({

@@ -1,7 +1,5 @@
 // Base API URL
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://beam-backend-v1-so4m.onrender.com/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // Helper function to handle responses
 const handleResponse = async (response) => {
@@ -16,7 +14,7 @@ const handleResponse = async (response) => {
   return data;
 };
 
-// Auth API calls
+// Register
 export const register = async (userData) => {
   const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: "POST",
@@ -29,6 +27,7 @@ export const register = async (userData) => {
   return handleResponse(response);
 };
 
+// Login
 export const login = async (credentials) => {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
@@ -41,10 +40,24 @@ export const login = async (credentials) => {
   return handleResponse(response);
 };
 
-// Export all functions together
-const authAPI = {
-  register,
-  login,
+// Google OAuth URL
+export const getGoogleAuthUrl = async () => {
+  const response = await fetch(`${API_BASE_URL}/auth/google/url`);
+  return handleResponse(response);
 };
 
-export default authAPI;
+// Google callback
+export const googleLogin = async (code) => {
+  const response = await fetch(
+    `${API_BASE_URL}/auth/google/callback?code=${code}`,
+  );
+
+  return handleResponse(response);
+};
+
+export default {
+  register,
+  login,
+  getGoogleAuthUrl,
+  googleLogin,
+};
