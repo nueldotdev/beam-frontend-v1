@@ -10,6 +10,7 @@
 /* Dashboard Layout */
 .dashboard {
   display: flex;
+   border-left: 1px solid #e5e7eb; /* modern subtle border */
   flex-direction: column;
   flex: 1;
   height: 100vh;
@@ -19,7 +20,6 @@
 .dashboard-header {
   padding: 0px 10px;
   width: 100%;
- border-left: 1px solid #e5e7eb; /* modern subtle border */
   background-color: transparent;
   box-shadow: 0 0px 12px rgba(0, 0, 0, 0.15);
   display: flex;
