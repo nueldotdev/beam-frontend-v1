@@ -298,7 +298,7 @@
   }
 }
 
-.visual-overlay {
+.hero-visual-overlay {
   position: absolute;
   bottom: 15%;
   right: 10%;
@@ -311,7 +311,7 @@
   z-index: 20;
 }
 
-.visual-badge {
+.hero-visual-badge {
   display: flex;
   align-items: center;
   gap: 8px;
