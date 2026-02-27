@@ -1,5 +1,8 @@
-import React, { useState , useNavigate} from "react";
+import React from 'react'
+import { useState } from 'react';
 import "../styles/meeting.css"
+
+  
 const initialMeetings = [
   {
     id: 1,
@@ -22,9 +25,17 @@ const initialMeetings = [
     time: "11:30 AM",
     host: "Bob Smith",
   },
+  {
+    id: 4,
+    title: "UX/UI Design Meeting",
+    date: "Feb 28, 2026",
+    time: "11:00 AM",
+    host: "Lara Smith",
+  },
+
 ];
 
-function Meetings() {
+function Meetings({className}) {
 
   const [meetings, setMeetings] = useState(initialMeetings);
 
@@ -37,7 +48,7 @@ function Meetings() {
   };
 
   return (
-    <div className="meetings-container">
+    <div  className={`meetings-container ${className}`}>
 
       {/* Header */}
       <div className="meetings-header">
@@ -90,7 +101,9 @@ function Meetings() {
       </div>
 
     </div>
-  );
+
+
+  )
 }
 
-export default Meetings;
+export default Meetings

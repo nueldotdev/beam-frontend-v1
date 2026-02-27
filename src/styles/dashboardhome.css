@@ -12,7 +12,9 @@
   padding: 12px;
   border-bottom: 1px solid #eee;
 }
-
+.meeting-display{
+  display: none !important;
+}
 .ai-title {
   font-size: 16px;
   color: #333;
@@ -278,4 +280,40 @@ font-family: "Gilroy", monospace;
   left: 15px;
   color: white;
   font-size: 14px;
+}
+@media (max-width: 768px) {
+  .video-gallery{
+    display:none
+  }
+   .meeting-display {
+    display: flex !important; /* keep flex children working */
+    flex-direction: column;   /* optional */
+  }
+
+  .main-video-container.medium,
+.screen-share-container.medium {
+  display: none;
+}
+.main-video-area{
+  display: flex;
+  flex-direction: column;
+}
+.zoom-actions {
+  display: flex;
+  flex-direction: row;/* stack buttons + title */
+  align-items: center;
+  gap: 20px;
+}
+
+/* buttons stay in a row */
+.zoom-btn {
+  display: flex;
+  gap: 10px;
+}
+
+/* title styling */
+.zoom-actions h4 {
+  margin: 0;
+  font-size: 13px;
+}
 }

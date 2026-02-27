@@ -2,9 +2,9 @@
 .dashboard-wrapper {
   display: flex;
   height: 100vh;
-
-  background: linear-gradient(90deg, hsla(223, 100%, 99%, 1) 0%, hsla(222, 100%, 93%, 1) 100%);
   overflow: hidden;
+  background: linear-gradient(90deg, hsla(223, 100%, 99%, 1) 0%, hsla(222, 100%, 93%, 1) 100%);
+  font-family: "Gilroy", monospace;
 }
 
 /* Dashboard Layout */
@@ -14,15 +14,14 @@
   flex: 1;
   height: 100vh;
   background-color: transparent;
-  color: #ffffff;
-  overflow: hidden;
 }
 
 .dashboard-header {
   padding: 0px 10px;
+  width: 100%;
  border-left: 1px solid #e5e7eb; /* modern subtle border */
   background-color: transparent;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0px 12px rgba(0, 0, 0, 0.15);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -87,15 +86,13 @@
 
 /* Main content area */
 .dashboard-content {
-  flex: 1;
-  width: 100%;
-  border-left: 1px solid #e5e7eb; /* modern subtle border */
-  background: transparent;
-  border-radius: 12px;
+  flex: 1;                 /* take remaining space */
+  min-height: 0;           /* VERY IMPORTANT in flex layout */
+  overflow-y: auto;        /* allows scrolling */
   display: flex;
+  flex-direction: column;  /* if stacking children vertically */
   gap: 12px;
   padding: 12px;
-  overflow: hidden;
 }
 .home-container {
   flex: 1;
@@ -105,7 +102,6 @@
   display: flex;
   gap: 12px;
   padding: 12px;
-  overflow: hidden;
 }
 
 /* Main video area */
@@ -493,18 +489,26 @@
 }
 
 @media (max-width: 768px) {
-  .dashboard-wrapper {
-    flex-direction: column;
+ 
+  .dashboard {
+    height: auto; /* 🔑 CRITICAL */
+    min-height: 100vh;
   }
-
+  .header-profile{
+    justify-content: end;
+    width: auto;
+  }
+  .header-icon-btn{
+    margin-top: 5px;
+  }
+   .main-video-area {
+    min-height: 240px;
+  }
+  
   .video-gallery {
     width: 100%;
     height: 150px;
     max-height: 150px;
-  }
-
-  .main-video-area {
-    flex: 1;
   }
 
   .gallery-grid {
@@ -537,8 +541,25 @@
 }
 
 @media (max-width: 480px) {
+   .dashboard {
+    height: auto; /* 🔑 CRITICAL */
+    min-height: 100vh;
+  }
+.dashboard-content{
+    flex: 1;
+    padding: 5px 0px;
+    overflow-y: auto;
+  }
+
+   .main-video-area {
+    min-height: 240px;
+    
+  }
+  .home-container{
+    padding: 0;
+  }
   .dashboard-header {
-    flex-direction: column;
+    flex-direction: row;
     gap: 12px;
     padding: 12px;
   }

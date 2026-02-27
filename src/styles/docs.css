@@ -1,0 +1,99 @@
+/* DocsPage.css */
+.docs-page {
+  padding: 20px;
+  font-family: "Gilroy", monospace;
+}
+
+.docs-page h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.docs-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.upload-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+}
+
+.upload-btn input[type="file"] {
+  display: none;
+}
+
+.search-input {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  flex-grow: 1;
+  min-width: 200px;
+}
+
+.docs-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+.doc-item {
+  border: 1px solid #ddd;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.doc-name {
+  font-weight: bold;
+}
+
+.doc-date {
+  font-size: 12px;
+  color: gray;
+}
+
+.doc-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.download-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.download-btn:hover {
+  background-color: #218838;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.no-docs {
+  color: gray;
+}

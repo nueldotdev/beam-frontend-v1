@@ -8,8 +8,10 @@ import Chat from '../components/Chat'
 import DashboardTabs from '../components/DashboardTabs'
 import DashboardHome from '../components/DashboardHome'
 import genimage from '../assets/dashboard-images/generative-aiicon.png'
-import Meetings from "../pages/Meetings"
 import LiveMeeting from "../components/LiveMeeting"
+import  Settings  from '../components/Settings.jsx'
+import Meetings from '../components/Meetings.jsx'
+import Docs from "../components/Docs.jsx"
 
 function DashBoard() {
 
@@ -44,6 +46,8 @@ function DashBoard() {
           <Route path="/home" element={<DashboardHome />} />
           <Route path='/meetings' element={<Meetings/>} />
           <Route path='/chat' element={<Chat/>}/>
+          <Route path="/settings" element={<Settings/>}/>
+          <Route path='/docs' element={<Docs/>}/>
           <Route path="/livemeeting" element={<LiveMeeting />} />
         </Routes>
       </div>

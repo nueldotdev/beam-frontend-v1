@@ -3,6 +3,7 @@ import { useState } from 'react'
 import"../styles/dashboardhome.css"
 import AiAssistant from './AiAssistant.jsx'
 import { PlusIcon, VideoIcon,CalendarSearch } from 'lucide-react'
+import Meetings from './Meetings.jsx'
 
 
 function DashboardHome() {
@@ -18,20 +19,29 @@ function DashboardHome() {
         <div className="main-video-area">
 
   {/* Zoom Quick Actions */}
-  <div className="zoom-actions">
+      <div className="zoom-actions">
+     <div className="zoom-item">
     <button className="zoom-btn new-meeting">
-     <VideoIcon size={35}  /> </button>
-     <h4>Host</h4>
-    <button className="zoom-btn join-meeting">
-        <PlusIcon size={35} />
-     </button>
-     <h4>Join</h4>
-    <button className="zoom-btn schedule-meeting">
-     <CalendarSearch size={35} />
-     </button>
-     <h4>Schedule</h4>
+      <VideoIcon size={35} />
+    </button>
+    <h4>Host</h4>
   </div>
 
+  <div className="zoom-item">
+    <button className="zoom-btn join-meeting">
+      <PlusIcon size={35} />
+    </button>
+    <h4>Join</h4>
+  </div>
+
+  <div className="zoom-item">
+    <button className="zoom-btn schedule-meeting">
+      <CalendarSearch size={35} />
+    </button>
+    <h4>Schedule</h4>
+  </div>
+</div>
+<Meetings className="meeting-display"/>
   {/* Video Section */}
   {isScreenSharing ? (
     <div className="screen-share-container medium">
