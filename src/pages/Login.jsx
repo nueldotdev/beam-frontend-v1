@@ -12,7 +12,7 @@ import {
 import logo from "../assets/logo/Beam.png";
 import Button from "../components/Button";
 import Input from "../components/Input";
-import { login, getGoogleAuthUrl } from "../utils/apicalls";
+import { login, getGoogleAuthUrl, googleLogin } from "../utils/apicalls";
 import "../styles/auth.css";
 
 const Login = () => {
@@ -26,6 +26,40 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
+
+  // Handle Google redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+
+    if (code) {
+      handleGoogleCallback(code);
+    }
+  }, []);
+
+  const handleGoogleCallback = async (code) => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await googleLogin(code);
+
+      if (data.token) {
+        localStorage.setItem("authToken", data.token);
+      }
+
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      navigate("/");
+    } catch (err) {
+      console.error("Google callback error:", err);
+      setError(err.message || "Google authentication failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Remember Me
   useEffect(() => {
@@ -86,7 +120,7 @@ const Login = () => {
         localStorage.setItem("user", JSON.stringify(response.user));
       }
 
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       setFailedAttempts((prev) => prev + 1);
       setError(err.message || "Login failed. Please check credentials.");
