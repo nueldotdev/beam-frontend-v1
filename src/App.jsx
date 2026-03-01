@@ -4,12 +4,14 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/DashBoard";
+import OAuthSuccess from "./components/OAuthSuccess";
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/oauth-success" element={<OAuthSuccess />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard/*" element={<Dashboard />} />
 
