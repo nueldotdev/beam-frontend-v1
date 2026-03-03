@@ -1,5 +1,6 @@
 import React from 'react'
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'
 import "../styles/meeting.css"
 
   
@@ -36,13 +37,14 @@ const initialMeetings = [
 ];
 
 function Meetings({className}) {
-
+  const navigate = useNavigate();
   const [meetings, setMeetings] = useState(initialMeetings);
 
-  // const handleStartMeeting = (meeting) => {
-  //   alert(`Starting meeting: ${meeting.title}`);
-  //    navigate(`/meeting/${meeting.id}`)
-  // };
+  const handleStartMeeting = (meeting) => {
+    // navigate to public pre-join entry page with meeting id
+    navigate(`/meetings/entry/${meeting.id}`);
+  };
+
   const handleNewMeeting = () => {
     alert("Create new instant meeting");
   };
