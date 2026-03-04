@@ -1,0 +1,47 @@
+
+.oauth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100vh;
+  transition: all 0.3s ease;
+  padding: 40px 20px;
+  background: linear-gradient(-45deg, #668dc9, #3382e9, #abbdee, #e4e8f7);
+  background-size: 400% 400%;
+  animation: gradientMove 15s ease infinite;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.logo-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+  column-gap: 6px;
+}
+
+.logo {
+  width: 2rem;
+  margin-bottom: 2px
+}
+
+.loader-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-oauth {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #888;
+}
+
+.max-size {
+  width: 4rem;
+  height: 4rem;
+}

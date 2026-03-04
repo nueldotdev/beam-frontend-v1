@@ -2,6 +2,12 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // Helper function to handle responses
+/**
+ * Converts api response to json and checks if response is valid.
+ * If it is not valid it throws an error with message from the response, otherwise it returns the data.
+ * @param {*} response 
+ * @returns data if response is ok, otherwise throws an error with message from response
+ */
 const handleResponse = async (response) => {
   const data = await response.json();
 
@@ -15,6 +21,11 @@ const handleResponse = async (response) => {
 };
 
 // Register
+/**
+ * Registers a new user with the provided data.
+ * @param {*} userData 
+ * @returns result from `handleResponse` function
+ */
 export const register = async (userData) => {
   const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: "POST",
@@ -49,7 +60,14 @@ export const getGoogleAuthUrl = async () => {
 // Google callback
 export const googleLogin = async (code) => {
   const response = await fetch(
-    `${API_BASE_URL}/auth/google/callback?code=${code}`,
+    `${API_BASE_URL}/auth/google/callback`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ code }),
+    }
   );
 
   return handleResponse(response);

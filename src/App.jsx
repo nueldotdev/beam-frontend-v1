@@ -4,7 +4,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/DashBoard";
-import OAuthSuccess from "./components/OAuthSuccess";
+import OAuthPage from "./components/OAuthSuccess";
 import { MeetingEntry } from "./pages/meetings/MeetingEntry";
 import LiveMeeting from "./components/LiveMeeting";
 
@@ -14,7 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/oauth-success" element={<OAuthSuccess />} />
+        <Route path="/google-oauth/callback" element={<OAuthPage />} />
         <Route path="/signup" element={<Signup />} />
 
         {/* dashboard keeps its own nested meeting routes */}
