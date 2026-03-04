@@ -66,34 +66,4 @@ const OAuthPage = () => {
   )
 }
 
-
-const OAuthSuccess = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("code");
-    const user = params.get("user");
-
-    if (token) {
-      localStorage.setItem("authToken", token);
-    }
-
-    if (user) {
-      localStorage.setItem("user", user);
-    }
-
-    navigate("/dashboard");
-  }, [navigate]);
-
-  return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">OAuth Login Successful!</h1>
-        <p className="text-gray-600">Redirecting to your dashboard...</p>
-      </div>
-    </div>
-  );
-};
-
 export default OAuthPage;
