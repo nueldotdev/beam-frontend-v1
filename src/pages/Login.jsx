@@ -120,7 +120,7 @@ const Login = () => {
         localStorage.setItem("user", JSON.stringify(response.user));
       }
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       setFailedAttempts((prev) => prev + 1);
       setError(err.message || "Login failed. Please check credentials.");
