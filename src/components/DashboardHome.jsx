@@ -1,12 +1,14 @@
 import React from 'react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import"../styles/dashboardhome.css"
 import AiAssistant from './AiAssistant.jsx'
 import { PlusIcon, VideoIcon,CalendarSearch } from 'lucide-react'
 import Meetings from './Meetings.jsx'
 
 
-function DashboardHome() {
+function DashboardHome({profileInitials}) {
+  const navigate = useNavigate();
       const [isMuted, setIsMuted] = useState(false)
       const [cameraOff, setCameraOff] = useState(false)
       const [isScreenSharing, setIsScreenSharing] = useState(false)
@@ -14,6 +16,18 @@ function DashboardHome() {
       const toggleMute = () => setIsMuted(!isMuted)
       const toggleCamera = () => setCameraOff(!cameraOff)
       const toggleScreenShare = () => setIsScreenSharing(!isScreenSharing)
+
+        
+  const handleHost = () => {
+    // Host does not need an ID yet, MeetingEntry will request one
+    navigate('/meetings/entry', { state: { role: 'host' } })
+  }
+
+  const handleJoin = () => {
+    // Participant will enter MeetingEntry and must provide a meeting ID
+    navigate('/meetings/entry', { state: { role: 'participant' } })
+  }
+
   return (
     <div className='home-container'>
         <div className="main-video-area">
@@ -21,14 +35,14 @@ function DashboardHome() {
   {/* Zoom Quick Actions */}
       <div className="zoom-actions">
      <div className="zoom-item">
-    <button className="zoom-btn new-meeting">
+    <button className="zoom-btn new-meeting" onClick={handleHost}>
       <VideoIcon size={35} />
     </button>
     <h4>Host</h4>
   </div>
 
   <div className="zoom-item">
-    <button className="zoom-btn join-meeting">
+    <button  onClick={handleJoin} className="zoom-btn join-meeting">
       <PlusIcon size={35} />
     </button>
     <h4>Join</h4>
@@ -57,11 +71,11 @@ function DashboardHome() {
     <div className="main-video-container medium">
       <div className="video-feed presenter">
         <div className="video-placeholder">
-          <div className="avatar-large">JD</div>
+          <div className="avatar-large">{profileInitials}</div>
         </div>
 
         <div className="video-info">
-          <span className="name">You (Presenter)</span>
+          <span className="name">You (Host)</span>
           {isMuted && <span className="status muted">🔇 Muted</span>}
           {cameraOff && <span className="status camera-off">📹 Camera Off</span>}
         </div>
