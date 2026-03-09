@@ -1,37 +1,78 @@
-import React from 'react'
+import React from "react";
+import {useLocation } from "react-router-dom";
+import "../styles/meeting.css";
+import MeetingControls from "./meeting-components/MeetingControls";
+import MeetingSidebar from "./meeting-components/MeetingSidebar";
+import VideoTile from "./meeting-components/VideoTile";
 
-function LiveMeeting() {
-  
+function LiveMeeting({ host, participants, onAddParticipant, onRemoveParticipant }) {
+  const { state } = useLocation()
+  const { role, name, meetingId, permission, camStream } = state || {}
+
+  // Initialize mic/camera state based on permission from MeetingEntry
+  const [isMuted, setIsMuted] = React.useState(!permission?.mic) // true if mic off
+  const [cameraOff, setCameraOff] = React.useState(!permission?.camera) // true if camera off
+  const [sidebarTab, setSidebarTab] = React.useState(null)
+
+  const toggleSidebar = (tab) => setSidebarTab(prev => prev === tab ? null : tab)
+
   return (
-    <div>
-          <div className="main-video-area">
-          {isScreenSharing ? (
-            <div className="screen-share-container">
-              <div className="screen-placeholder">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <rect x="2" y="3" width="20" height="14" rx="2" />
-                  <path d="M2 17h20" />
-                </svg>
-                <p>Screen being shared</p>
-              </div>
-            </div>
-          ) : (
-            <div className="main-video-container">
-              <div className="video-feed presenter">
-                <div className="video-placeholder">
-                  <div className="avatar-large">JD</div>
-                </div>
-                <div className="video-info">
-                  <span className="name">You (Presenter)</span>
-                  {isMuted && <span className="status muted">🔇 Muted</span>}
-                  {cameraOff && <span className="status camera-off">📹 Camera Off</span>}
-                </div>
-              </div>
-            </div>
-          )}
+    <div className="live-meeting">
+
+      <div className={`meeting-body ${sidebarTab ? "meeting-body--with-sidebar" : ""}`}>
+        <div className="video-grid">
+          <VideoTile
+           name={(name || host?.name || "You")} // full name in caps
+          initials={(name || host?.name || "You")
+              .split(" ")
+              .map(n => n[0])
+              .join("")
+              .toUpperCase() || "?"} // initials in caps
+          isMuted={isMuted}
+          cameraOff={cameraOff}
+          role={role || "host"}
+          isSelf
+          />
+          {participants?.map((p) => (
+            <VideoTile
+              key={p.id}
+              name={p.name}
+              initials={p.initials}
+              isMuted={p.isMuted}
+              cameraOff={p.cameraOff}
+              role="participant"
+              onRemove={() => onRemoveParticipant?.(p.id)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {sidebarTab && (
+        <MeetingSidebar
+          tab={sidebarTab}
+          onTabChange={setSidebarTab}
+          onClose={() => setSidebarTab(null)}
+          host={host}
+          participants={participants}
+          onAddParticipant={onAddParticipant}
+          onRemoveParticipant={onRemoveParticipant}
+        />
+      )}
+
+      <MeetingControls
+        isMuted={isMuted}
+        cameraOff={cameraOff}
+        isHost={role === "host"}
+        sidebarTab={sidebarTab}
+        onToggleTranscribe={() => toggleSidebar("transcribe")}
+        onToggleMic={() => setIsMuted(prev => !prev)}
+        onToggleVideo={() => setCameraOff(prev => !prev)}
+        onToggleParticipants={() => toggleSidebar("participants")}
+        onToggleChat={() => toggleSidebar("chat")}
+      />
+
     </div>
-    </div>
-  )
+  );
 }
 
-export default LiveMeeting
+export default LiveMeeting;
