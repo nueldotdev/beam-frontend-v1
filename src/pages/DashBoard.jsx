@@ -15,24 +15,26 @@ import Docs from "../components/Docs.jsx"
 
 function DashBoard() {
 
-   const profile = {
-      name: "John Doe",
-      email: "john.doe@example.com"
-    }
+const user = JSON.parse(localStorage.getItem("user")) || {};
+const name = user?.profile?.firstName || "User";
+
+const profileCaps = name[0].toUpperCase() + name.slice(1);
+const profileInitials = name.split(" ").map(n => n[0]).join("").toUpperCase();
+
   return (
    
     <div className="dashboard-wrapper">
       <Sidebar />
       <div className="dashboard">
       <div className="dashboard-header">
-        <h1>Welcome, <span>{profile.name}</span></h1>
+        <h1>Welcome, <span>{profileCaps}</span></h1>
       {/* Profile section */}
       <div className="header-profile">
         <div className="header-icons">
           <img className="header-icon-btn" title="Ai" src={genimage} />
         </div >
 
-         <div className="profile-avatar">JD</div>
+         <div className="profile-avatar">{profileInitials}</div>
       </div>
 
         {/* <div className="header-stats">
@@ -43,12 +45,12 @@ function DashBoard() {
 
       <div className="dashboard-content">
         <Routes>
-          <Route path="/home" element={<DashboardHome />} />
-          <Route path='/meetings' element={<Meetings/>} />
+        <Route path="/home" element={<DashboardHome profileInitials={profileInitials}  />} />
+          <Route path='/meetings' element={<Meetings  />} />
+          <Route path='/meetings/live/:id' element={<LiveMeeting />} />
           <Route path='/chat' element={<Chat/>}/>
           <Route path="/settings" element={<Settings/>}/>
           <Route path='/docs' element={<Docs/>}/>
-          <Route path="/livemeeting" element={<LiveMeeting />} />
         </Routes>
       </div>
 

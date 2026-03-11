@@ -58,7 +58,7 @@ function Meetings({className}) {
 
         <button
           className="start-meeting-btn"
-          onClick={handleNewMeeting}
+          onClick={handleStartMeeting}
         >
           + Start New Meeting
         </button>
