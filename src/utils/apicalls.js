@@ -76,15 +76,62 @@ export const googleLogin = async (code) => {
 // send uploaded file link to meeting endpoint
 export const uploadMeetingFile = async (meetingId, fileUrl) => {
   const token = localStorage.getItem('authToken');
-  const response = await fetch(`${API_BASE_URL}/meetings/${meetingId}/upload`, {
+  // Back-end stores document metadata in `/documents`.
+  const response = await fetch(`${API_BASE_URL}/documents`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({ url: fileUrl }),
+    body: JSON.stringify({
+      meetingCode: meetingId, // meetingId in UI is a meeting code
+      filename: fileUrl.split('/').pop() || 'document',
+      fileType: 'pdf',
+      fileUrl,
+      size: null,
+      pageCount: null,
+      slides: [],
+    }),
   });
 
+  return handleResponse(response);
+};
+
+export const listMeetingDocuments = async (meetingId) => {
+  const token = localStorage.getItem('authToken');
+  const url = new URL(`${API_BASE_URL}/documents`);
+  url.searchParams.set('meetingCode', meetingId);
+  const response = await fetch(url.toString(), {
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  return handleResponse(response);
+};
+
+export const askMeetingAi = async (meetingKey, question) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_BASE_URL}/meetings/${encodeURIComponent(meetingKey)}/ai/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ question }),
+  });
+  return handleResponse(response);
+};
+
+export const addMeetingTranscript = async (meetingKey, { speakerName, content, isFinal }) => {
+  const token = localStorage.getItem('authToken');
+  const response = await fetch(`${API_BASE_URL}/meetings/${encodeURIComponent(meetingKey)}/transcripts`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ speakerName, content, isFinal }),
+  });
   return handleResponse(response);
 };
 
@@ -94,4 +141,7 @@ export default {
   getGoogleAuthUrl,
   googleLogin,
   uploadMeetingFile,
+  listMeetingDocuments,
+  askMeetingAi,
+  addMeetingTranscript,
 };

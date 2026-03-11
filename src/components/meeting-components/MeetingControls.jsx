@@ -4,8 +4,9 @@ import { BiChat } from 'react-icons/bi'
 import { HiUserAdd } from 'react-icons/hi'
 import { MdCallEnd } from 'react-icons/md'
 import { RiVoiceprintLine} from 'react-icons/ri'
+import { FaRegFileAlt } from 'react-icons/fa'
 
-function MeetingControls({ isMuted, cameraOff, onToggleMic, onToggleVideo, onEndCall, isHost, onToggleParticipants, onToggleChat,onToggleTranscribe }) {
+function MeetingControls({ isMuted, cameraOff, onToggleMic, onToggleVideo, onEndCall, isHost, onToggleParticipants, onToggleChat, onToggleTranscribe, onToggleDocs }) {
   return (
     <div className="meeting-controls">
 
@@ -22,6 +23,12 @@ function MeetingControls({ isMuted, cameraOff, onToggleMic, onToggleVideo, onEnd
         data-tip="Chat"
       >
       </BiChat>
+
+      <FaRegFileAlt
+        className="control-btn"
+        onClick={onToggleDocs}
+        data-tip="Docs"
+      />
       
       <VideoIcon
         className={`control-btn ${cameraOff ? "control-btn--active" : ""}`}

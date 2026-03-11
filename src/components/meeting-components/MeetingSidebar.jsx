@@ -1,9 +1,26 @@
 import React from "react";
 import "../../styles/meeting-styles/live.css";
-import { RiVoiceAiLine } from "react-icons/ri";
-import { AlignCenter } from "lucide-react";
+import MeetingChatPanel from "./MeetingChatPanel";
+import MeetingDocsPanel from "./MeetingDocsPanel";
+import MeetingTranscribePanel from "./MeetingTranscribePanel";
+import MeetingAiPanel from "./MeetingAiPanel";
 
-function MeetingSidebar({ tab, onTabChange, onClose, host, participants, onAddParticipant, onRemoveParticipant }) {
+function MeetingSidebar({
+  tab,
+  onTabChange,
+  onClose,
+  host,
+  participants,
+  onAddParticipant,
+  onRemoveParticipant,
+  socket,
+  meetingKey,
+  displayName,
+  isHost,
+  present,
+  followHost,
+  onFollowHostChange,
+}) {
   const [newName, setNewName] = React.useState("");
   const totalCount = (participants?.length || 0) + 1;
 
@@ -26,10 +43,22 @@ function MeetingSidebar({ tab, onTabChange, onClose, host, participants, onAddPa
             People ({totalCount})
           </button>
           <button
+            className={`sidebar-tab ${tab === "docs" ? "sidebar-tab--active" : ""}`}
+            onClick={() => onTabChange("docs")}
+          >
+            Docs
+          </button>
+          <button
             className={`sidebar-tab ${tab === "chat" ? "sidebar-tab--active" : ""}`}
             onClick={() => onTabChange("chat")}
           >
             Chat
+          </button>
+          <button
+            className={`sidebar-tab ${tab === "ai" ? "sidebar-tab--active" : ""}`}
+            onClick={() => onTabChange("ai")}
+          >
+            AI
           </button>
            <button
             className={`sidebar-tab ${tab === "transcribe" ? "sidebar-tab--active" : ""}`}
@@ -86,15 +115,32 @@ function MeetingSidebar({ tab, onTabChange, onClose, host, participants, onAddPa
           </div>
         )}
 
+        {tab === "docs" && (
+          <MeetingDocsPanel
+            meetingKey={meetingKey}
+            isHost={isHost}
+            socket={socket}
+            present={present}
+            followHost={followHost}
+            onFollowHostChange={onFollowHostChange}
+          />
+        )}
+
         {tab === "chat" && (
           <div className="sidebar-chat">
-            <p className="sidebar-empty">Chat coming soon.</p>
+            <MeetingChatPanel socket={socket} meetingKey={meetingKey} displayName={displayName} />
+          </div>
+        )}
+
+        {tab === "ai" && (
+          <div className="sidebar-ai" style={{ height: "100%" }}>
+            <MeetingAiPanel meetingKey={meetingKey} />
           </div>
         )}
 
         {tab === "transcribe" && (
           <div className="sidebar-transcribe">
-          <RiVoiceAiLine size={50}/>
+            <MeetingTranscribePanel socket={socket} meetingKey={meetingKey} displayName={displayName} />
           </div>
         )}
 

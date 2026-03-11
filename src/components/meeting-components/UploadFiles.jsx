@@ -31,8 +31,8 @@ function UploadFiles({ meetingId }) {
     setLoading(true)
     setStatus('Uploading...')
 
-    const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME
-    const preset = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+    const preset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
 
     if (!cloudName || !preset) {
       setStatus('Error: Cloudinary config missing')
@@ -119,7 +119,7 @@ function UploadFiles({ meetingId }) {
           />
           <path
             className="progress-bar"
-            strokeDasharray={`${progress}, 100"`}
+            strokeDasharray={`${progress}, 100`}
             d="M18 2.0845
                a 15.9155 15.9155 0 0 1 0 31.831
                a 15.9155 15.9155 0 0 1 0-31.831"
