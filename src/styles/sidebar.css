@@ -153,6 +153,9 @@
   align-items: center;
   justify-content: center;
 }
+.logo-text{
+  display: none;
+}
 
 .sidebar-nav-bottom .nav-icon{
     font-size: 20px;
