@@ -1,4 +1,4 @@
-export const JITSI_DOMAIN = "meet.jit.si";
+export const JITSI_DOMAIN = "8x8.vc";
 
 export const JITSI_CONFIG = {
   // ── Kill the prejoin screen completely ───────────────────

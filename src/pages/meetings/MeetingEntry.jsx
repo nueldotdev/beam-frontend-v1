@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Camera, CameraOff, MicIcon, MicOff } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 import UploadFiles from "../../components/meeting-components/UploadFiles";
@@ -12,7 +12,8 @@ export const MeetingEntry = () => {
   const { role } = location.state || { role: "participant" };
 
   const [name, setName] = useState("");
-  const [meetingId, setMeetingId] = useState("");
+  const { id } = useParams();
+  const [meetingId, setMeetingId] = useState(id || "");
   const [permission, setPermission] = useState({ camera: null, mic: null });
   const [loadingPerms, setLoadingPerms] = useState(true);
   const [camStream, setCamStream] = useState(null);
@@ -52,7 +53,11 @@ export const MeetingEntry = () => {
       }
     };
     const check = async () => {
-      await Promise.all([askCamera(), askMic()]);
+      // Race against a 3-second timeout in case the browser hangs requesting permissions silently
+      await Promise.race([
+          Promise.all([askCamera(), askMic()]),
+          new Promise(res => setTimeout(res, 3000))
+      ]);
       mounted && setLoadingPerms(false);
     };
     check();
@@ -70,7 +75,7 @@ export const MeetingEntry = () => {
   }, [camStream]);
 
   // ── Join Handler ─────────────────────────────────────────
-  const handleJoin = () => {
+  const handleJoin = async () => {
     let hasError = false;
     const newError = { name: "", meetingId: "" };
 
@@ -87,15 +92,46 @@ export const MeetingEntry = () => {
     setError(newError);
     if (hasError) return;
 
+    let finalMeetingId = meetingId.trim().toUpperCase();
+
+    // If hosting a new meeting, provision a real meeting ID from the backend
+    if (role === "host" && (!finalMeetingId || finalMeetingId === "NEW")) {
+      try {
+        const token = localStorage.getItem("authToken");
+        const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+        const apiUrl = baseUrl.replace(/\/+$/, '');
+        
+        const res = await fetch(`${apiUrl}/meetings`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ title: `${name}'s Meeting` })
+        });
+        
+        const data = await res.json();
+        if (data.success && data.data?.meeting?.meetingCode) {
+           finalMeetingId = data.data.meeting.meetingCode;
+        } else {
+           setError((prev) => ({ ...prev, meetingId: "Failed to create meeting on server" }));
+           return;
+        }
+      } catch (err) {
+         setError((prev) => ({ ...prev, meetingId: "Network error creating meeting" }));
+         return;
+      }
+    }
+
     // Stop the preview stream — Jitsi will own the camera from here
     camStream?.getTracks().forEach((t) => t.stop());
 
     // Navigate to VideoPage, passing all state it needs
-    navigate(`/meetings/live/${meetingId || "new"}`, {
+    navigate(`/meetings/live/${finalMeetingId}`, {
       state: {
         role,
         name,
-        meetingId: meetingId || "new",
+        meetingId: finalMeetingId,
         permission, // { camera: bool, mic: bool } — VideoPage reads these
       },
     });
@@ -138,7 +174,7 @@ export const MeetingEntry = () => {
                 id="meetingId"
                 placeholder="Enter Meeting ID"
                 value={meetingId}
-                onChange={(e) => setMeetingId(e.target.value)}
+                onChange={(e) => setMeetingId(e.target.value.toUpperCase())}
                 style={{ borderColor: error.meetingId ? "red" : undefined }}
               />
               {error.meetingId && (
@@ -153,7 +189,7 @@ export const MeetingEntry = () => {
             Join Meeting
           </Button>
 
-          {meetingId && <UploadFiles meetingId={meetingId} />}
+          {role === "host" && meetingId && meetingId !== "new" && <UploadFiles meetingId={meetingId} />}
         </form>
       </div>
 

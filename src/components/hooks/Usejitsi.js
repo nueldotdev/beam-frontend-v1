@@ -34,10 +34,6 @@ function suppressJitsiUI(containerEl) {
       display: none !important;
       pointer-events: none !important;
     }
-    #largeVideoContainer, #largeVideoWrapper, #largeVideo {
-      width: 100% !important;
-      height: 100% !important;
-    }
   `;
 
   let tries = 0;
@@ -77,6 +73,8 @@ function suppressJitsiUI(containerEl) {
  * so only our custom VideoPage UI is visible.
  */
 export function useJitsi({
+  appId,
+  jwt,
   roomId,
   displayName,
   startMicOn,
@@ -103,8 +101,11 @@ export function useJitsi({
 
       if (cancelled || !containerRef.current) return;
 
+      const roomFullName = appId ? `${appId}/${roomId}` : roomId;
+
       const api = new window.JitsiMeetExternalAPI(JITSI_DOMAIN, {
-        roomName: roomId,
+        roomName: roomFullName,
+        jwt: jwt,
         parentNode: containerRef.current,
         width: "100%",
         height: "100%",
@@ -155,7 +156,7 @@ export function useJitsi({
       apiRef.current?.dispose();
       apiRef.current = null;
     };
-  }, [roomId, displayName, startMicOn, startCamOn]);
+  }, [appId, jwt, roomId, displayName, startMicOn, startCamOn]);
 
   return { executeCommand };
 }

@@ -26,7 +26,7 @@ export const resolveRoomId = (paramId) => {
  * Builds a shareable invite link for the given roomId.
  */
 export const buildInviteLink = (roomId) =>
-  `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+  `${window.location.origin}/meetings/entry/${roomId}`;
 
 // ─── Time Helpers ─────────────────────────────────────────────────────────────
 

@@ -61,7 +61,13 @@ function UploadFiles({ meetingId }) {
             const data = JSON.parse(xhr.responseText);
             const fileUrl = data.secure_url;
             setStatus("Notifying server...");
-            await uploadMeetingFile(meetingId, fileUrl);
+            await uploadMeetingFile({
+              meetingId,
+              filename: file.name,
+              fileType: "pdf",
+              fileUrl,
+              size: file.size,
+            });
             setStatus("Upload successful");
           } catch (err) {
             console.error(err);

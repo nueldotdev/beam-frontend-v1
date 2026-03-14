@@ -71,15 +71,16 @@ export const googleLogin = async (code) => {
 };
 
 // send uploaded file link to meeting endpoint
-export const uploadMeetingFile = async (meetingId, fileUrl) => {
+export const uploadMeetingFile = async (data) => {
   const token = localStorage.getItem("authToken");
-  const response = await fetch(`${API_BASE_URL}/meetings/${meetingId}/upload`, {
+
+  const response = await fetch(`${API_BASE_URL}/documents`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({ url: fileUrl }),
+    body: JSON.stringify(data),
   });
 
   return handleResponse(response);
