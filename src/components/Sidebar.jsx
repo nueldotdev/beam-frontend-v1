@@ -6,19 +6,24 @@ import { SidebarData } from '../constants/SidebarData'
 import { useNavigate } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
 
-function Sidebar() {
+function Sidebar({closeSidebar,isOpen}) {
   const [collapsed, setCollapsed] = useState(false)
+
 
   const navigate = useNavigate();
   const location = useLocation(); // ✅ REQUIRED
 
   return (
-    <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
+     <div className={`sidebar ${isOpen ? "open" : ""}`}>
 
       <div className="sidebar-header">
         <div className={`logo ${collapsed ? 'hide' : ''}`}>
           <img src={beamlogo} className='logo-icon' alt="Beam Logo" />
+          <h2 className="logo-text">Beam</h2>
         </div>
+         <button className="close-btn" onClick={closeSidebar}>
+          ✕
+        </button>
       </div>
 
       {/* Main navigation */}
@@ -45,17 +50,12 @@ function Sidebar() {
                 )}
           </span>
 
-          {!collapsed && (
             <span className="nav-label">
               {item.label}
             </span>
-          )}
-
-          {item.badge && !collapsed && (
-            <span className="badge">
-              {item.badge}
-            </span>
-          )}
+    
+            
+        
         </Link>
       );
     })}
@@ -85,7 +85,7 @@ function Sidebar() {
                 )}
           </span>
 
-          {!collapsed && item.label}
+          {item.label}
         </Link>
       );
     })}

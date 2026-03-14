@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Camera, CameraOff, MicIcon, MicOff } from 'lucide-react'
+import { ArrowBigLeftDash, Camera, CameraOff, MicIcon, MicOff } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Button from '../../components/Button'
 import Input from '../../components/Input'
 import UploadFiles from '../../components/meeting-components/UploadFiles'
 import '../../styles/meeting-styles/entry.css'
+import { IoArrowBack } from 'react-icons/io5'
 
 export const MeetingEntry = () => {
   const navigate = useNavigate()
@@ -99,6 +100,9 @@ const handleJoin = () => {
 
   return (
     <div className="auth-container">
+      <div className="back-button">
+        <IoArrowBack className='back-icon' size={30} onClick={() => navigate('/dashboard/home')} />
+      </div>
       <div className="auth-card">
         <form onSubmit={(e) => { e.preventDefault(); handleJoin() }} autoComplete="off">
 

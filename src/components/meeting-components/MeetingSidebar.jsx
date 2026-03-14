@@ -2,6 +2,7 @@ import React from "react";
 import "../../styles/meeting-styles/live.css";
 import { RiVoiceAiLine } from "react-icons/ri";
 import { AlignCenter } from "lucide-react";
+import Transciption from "../Transcription";
 
 function MeetingSidebar({ tab, onTabChange, onClose, host, participants, onAddParticipant, onRemoveParticipant }) {
   const [newName, setNewName] = React.useState("");
@@ -94,7 +95,7 @@ function MeetingSidebar({ tab, onTabChange, onClose, host, participants, onAddPa
 
         {tab === "transcribe" && (
           <div className="sidebar-transcribe">
-          <RiVoiceAiLine size={50}/>
+          <Transciption />
           </div>
         )}
 
