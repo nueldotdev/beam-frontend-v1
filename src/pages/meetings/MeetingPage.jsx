@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 
-import { useJitsi } from "../../components/hooks/Usejitsi.js";
+import { useJitsi } from "../../components/hooks/useJitsi.js";
 import { useCallTimer } from "../../components/hooks/useCallTimer.js";
 import { useTranscription } from "../../components/hooks/useTranscription.js";
 import { resolveRoomId } from "../../utils/meetingHelpers.js";
