@@ -1,0 +1,46 @@
+
+.gallery-header {
+  display: flex;
+  background-color: #ffff;
+  align-items: center;
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+}
+.gallery-container{
+  display: flex;
+  flex-direction:  column;
+  flex: 1;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  padding: 0.8rem;
+  cursor: pointer;
+  transition: color 0.2s, border-bottom 0.2s;
+}
+
+.tab-btn.active {
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 0.8rem;
+  background-color: #dde7ff;
+  color: #1e40af;
+}
+
+.btn-toggle-gallery {
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.gallery-content {
+background-color: #ffffff;
+margin-top: 0.5rem;
+flex: 1;
+  padding: 1rem;
+  border-radius: 20px;
+}

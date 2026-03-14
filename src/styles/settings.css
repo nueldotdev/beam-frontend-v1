@@ -1,0 +1,77 @@
+.settings-container {
+  display: flex;
+  height: 100%;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.settings-sidebar {
+  width: 200px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.settings-sidebar button {
+  padding: 10px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  transition: 0.2s;
+}
+
+.settings-sidebar button:hover {
+  background: #e0f2fe;
+}
+
+.settings-sidebar .active {
+  background: #2563eb;
+  color: white;
+}
+
+.settings-content {
+  flex: 1;
+  padding: 20px;
+  margin: auto 0px;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.settings-section label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.settings-section input,
+.settings-section select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  margin-top: 5px;
+}
+
+.checkbox {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px;
+}
+
+.save-btn {
+  margin-top: 20px;
+  padding: 10px 16px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}

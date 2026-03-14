@@ -1,0 +1,218 @@
+.meetings-container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: #f8fafc;
+  height: 100%;
+}
+
+/* Header */
+
+.meetings-header {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.meetings-header h2 {
+  margin: 0;
+  color:#374151;
+  font-size: 22px;
+}
+
+/* Buttons */
+
+.start-meeting-btn {
+  background: #2563eb;
+  color: white;
+  font-family: "Gilroy", monospace;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.2s;
+}
+
+.start-meeting-btn:hover {
+  background: #1d4ed8;
+}
+
+/* List */
+
+.section-title {
+  margin-bottom: 15px;
+  color: #374151;
+}
+
+.meeting-card {
+  background: white;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Info */
+
+.meeting-info h4 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.meeting-info p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.host {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Join button */
+
+.join-btn {
+  background: #10b981;
+  border: none;
+  font-family: "Gilroy", monospace;
+  margin: 20px;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.join-btn:hover {
+  background: #059669;
+}
+
+/* Empty */
+
+/* upload files widget */
+.upload-files {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  align-items: center;
+}
+
+.upload-files input[type="file"] {
+  border: 1px solid var(--border-color);
+  padding: 6px;
+  border-radius: 4px;
+}
+
+.upload-files button {
+  background: var(--primary-blue);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.upload-files button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.upload-status {
+  font-size: 14px;
+  color: var(--dark-text);
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* new upload box */
+.upload-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  background: #fafafa;
+  transition: background 0.2s;
+}
+
+.upload-box:hover {
+  background: #f0f0f0;
+}
+
+.upload-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.file-name {
+  font-weight: 600;
+  color: var(--dark-text);
+}
+
+.file-size {
+  font-size: 12px;
+  color: var(--gray-text);
+  margin-top: 2px;
+}
+
+.file-placeholder {
+  color: var(--gray-text);
+}
+
+.upload-progress {
+  position: relative;
+  /* width: 40px; */
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.progress-circle {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.progress-bg {
+  fill: none;
+  stroke: #eee;
+  stroke-width: 3.8;
+}
+
+.progress-bar {
+  fill: none;
+  stroke: var(--primary-blue);
+  stroke-width: 3.8;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.3s ease;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  color: var(--dark-text);
+}
+
+.empty {
+  padding: 20px;
+  text-align: center;
+  color: #9ca3af;
+}
