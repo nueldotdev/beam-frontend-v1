@@ -19,7 +19,14 @@ export function DocumentSidebar({ meetingId, onClose, onPresentDocument }) {
       });
       const data = await res.json();
       if (data.success) {
-        setDocuments(data.data);
+        // Filter out any duplicates by fileUrl (can happen if upload fires twice)
+        const seen = new Set();
+        const unique = data.data.filter(doc => {
+          if (seen.has(doc.fileUrl)) return false;
+          seen.add(doc.fileUrl);
+          return true;
+        });
+        setDocuments(unique);
       }
     } catch (e) {
       console.error("Failed to fetch documents", e);
@@ -59,7 +66,7 @@ export function DocumentSidebar({ meetingId, onClose, onPresentDocument }) {
                >
                  Present
                </button>
-               <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="btn" style={{ fontSize: '12px' }}>Download</a>
+               <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="btn" style={{ fontSize: '12px' }} download={doc.filename}>Download</a>
             </div>
           </div>
         ))}

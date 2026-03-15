@@ -13,6 +13,7 @@ export function useTranscription({ micOn, onTranscriptChunk }) {
       return;
     }
 
+    let isMounted = true;
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
@@ -41,7 +42,7 @@ export function useTranscription({ micOn, onTranscriptChunk }) {
 
     recognition.onend = () => {
       // If mic is still supposed to be on, restart recognition.
-      if (micOn) {
+      if (micOn && isMounted) {
         try {
           recognition.start();
         } catch (e) {
@@ -55,6 +56,7 @@ export function useTranscription({ micOn, onTranscriptChunk }) {
     recognitionRef.current = recognition;
 
     return () => {
+      isMounted = false;
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }

@@ -28,6 +28,7 @@ const ICONS = {
     "M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zm-7-3.53v-2.19c-2.78.48-4.34 1.71-5.5 3.72.19-1.81 1.11-3.53 5.5-4.2V9.75L16 12.25l-3 2.22z",
   hand: "M21 7c0-1.38-1.12-2.5-2.5-2.5-.19 0-.37.02-.54.06C17.67 3.6 16.74 3 15.5 3c-.19 0-.37.02-.54.06C14.67 2.1 13.74 1.5 12.5 1.5 11.12 1.5 10 2.62 10 4v7.52c-.41-.95-1.26-2.63-1.99-3.32-.65-.61-1.37-.73-1.84-.68-.96.1-1.67.92-1.67 1.84 0 .36.1.7.27 1l4.05 7.58C9.5 19.47 11.14 21 13.5 21c4.14 0 7.5-3.36 7.5-7.5V7z",
   chat: "M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z",
+  transcript: "M21 4H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM9 11H7V9h2v2zm4 0h-2V9h2v2zm4 0h-2V9h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z",
   docs: "M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z",
   ai: "M19.1 0c-1.3.1-2.9.7-4 1.5-.7.5-1.5 1.4-1.9 2L13 3.9 12.8 3c-.2-.5-1.4-2.2-2.3-3L10.2 0 9.8.7c-1 1.5-1.6 3-2 5.2-.2.6-.4 1-.5.9-.2-.2-.5-.1-1 .2a22 22 0 00-6.1 7.2A8 8 0 000 17.6v1l3 1.8a22.5 22.5 0 0013.1 3.5h.7l2.6-1.3c2.9-1.5 4.6-4 4.6-6.6.1-1.8-.4-3.5-1.7-5.5l-.5-.7-.3-.6a17.2 17.2 0 011.6-4 27.2 27.2 0 00.9-4v-1a4 4 0 00-.7-.2h-4.2zm-2.8 1.4c-.2.1-.3.4-.6.8a13 13 0 00-1 4.5l-.1 1-.9-1.2c-.5-.7-1-1.6-1.1-2l-.1-1L12.3 4a12.8 12.8 0 01-1.4 3l-1.4-2.8a12 12 0 01-.1-2.5h1.2-.2c-1.5 0-3 2.1-3 5-.1.5.1 1.2.6 1.7 1.3 1.2 5.1 4.5 4.8 4-.1-.1-.3-.6-.5-1-.5-1-1.2-2.1-1.5-2.6l-.6-.8 1.1 1.6c.5.8 1.4 2 2 2.6l1 1.3V11l-.8-2c-.9-2.1-1-2.6-.6-3 .3-.3 1 1 2 4.1l.9 2.5v1.2c.1-.5.6-2 .9-3 .6-1.6 1.1-3 1.2-4 .2-1.3.1-1.5-.5-1.7z",
   people:
@@ -44,10 +45,9 @@ export function CallToolbar({
   camOn,
   screenSharing,
   handRaised,
-  showChat,
-  showParticipants,
   showAi,
   showDocs,
+  showTranscript,
   unreadCount,
   onToggleMic,
   onToggleCam,
@@ -57,6 +57,7 @@ export function CallToolbar({
   onOpenParticipants,
   onOpenAi,
   onOpenDocs,
+  onOpenTranscript,
   onEndCall,
 }) {
   const [showMore, setShowMore] = useState(false);
@@ -109,6 +110,10 @@ export function CallToolbar({
         
         <ControlButton onClick={onOpenAi} active={showAi} title="Amazon Nova AI">
             <Ic d={ICONS.ai} />
+        </ControlButton>
+
+        <ControlButton onClick={onOpenTranscript} active={showTranscript} title="Transcription">
+            <Ic d={ICONS.transcript} />
         </ControlButton>
 
         <div className="video-controls__badge-wrap">

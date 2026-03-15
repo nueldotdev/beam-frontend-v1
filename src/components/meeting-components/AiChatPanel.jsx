@@ -23,8 +23,12 @@ export function AiChatPanel({ roomId, onClose }) {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`http://localhost:3000/api/meetings/${roomId}/ai-chat`, {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const token = localStorage.getItem('authToken');
+      const response = await axios.post(`${apiUrl}/meetings/${roomId}/ai/chat`, {
         question: text,
+      }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       // Append Amazon Nova response
       setChatHistory((prev) => [

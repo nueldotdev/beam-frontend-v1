@@ -13,6 +13,7 @@ import { ParticipantsPanel } from "../../components/meeting-components/Participa
 import { AiChatPanel } from "../../components/meeting-components/AiChatPanel.jsx";
 import { DocumentSidebar } from "../../components/meeting-components/DocumentSidebar.jsx";
 import { SharedDocumentViewer } from "../../components/meeting-components/SharedDocumentViewer.jsx";
+import { TranscriptPanel } from "../../components/meeting-components/TranscriptPanel.jsx";
 
 import "../../styles/meeting-styles/meetingPage.css";
 
@@ -38,6 +39,8 @@ export default function MeetingPage() {
   
   const [messages, setMessages] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [transcripts, setTranscripts] = useState([]);
+  const [showTranscript, setShowTranscript] = useState(false);
   const [participants, setParticipants] = useState([
     { name: displayName, isSelf: true, audioMuted: !startMicOn },
   ]);
@@ -49,6 +52,8 @@ export default function MeetingPage() {
   // Synchronized Document State
   const [presentState, setPresentState] = useState(null); // { docId, url, page }
   const [followHost, setFollowHost] = useState(true);
+
+  const [meetingEndedMsg, setMeetingEndedMsg] = useState(null);
 
   const jitsiContainerRef = useRef(null);
   const socketRef = useRef(null);
@@ -69,8 +74,22 @@ export default function MeetingPage() {
     });
 
     socketRef.current.on("present:updated", (data) => {
-        if (followHost) {
+        // If host stopped presenting (null), always clear for everyone
+        if (data.present === null) {
+            setPresentState(null);
+        } else if (followHost) {
+            // Otherwise only sync pages if participant is following the host
             setPresentState(data.present);
+        }
+    });
+
+    socketRef.current.on("meeting:ended", (data) => {
+        setMeetingEndedMsg(data.message || "The host has ended the meeting.");
+    });
+
+    socketRef.current.on("transcript:chunk", (chunk) => {
+        if (chunk.isFinal) {
+            setTranscripts((prev) => [...prev, chunk]);
         }
     });
 
@@ -119,6 +138,58 @@ export default function MeetingPage() {
     };
   }, [roomId]);
 
+  // Fetch initial transcripts on load
+  useEffect(() => {
+    let mounted = true;
+    const fetchTranscripts = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+        const response = await fetch(`${apiUrl}/meetings/${roomId}/transcripts`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        const data = await response.json();
+        if (data.success && mounted) {
+          setTranscripts(data.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch initial transcripts:", err);
+      }
+    };
+    fetchTranscripts();
+    return () => { mounted = false; };
+  }, [roomId]);
+
+  // Proactive token refresh — the default JWT expires in 1h.
+  // While in a meeting we re-issue a fresh 8h token every 45 minutes so
+  // the host's session never drops mid-call.
+  useEffect(() => {
+    const REFRESH_INTERVAL_MS = 45 * 60 * 1000; // 45 minutes
+
+    const refresh = async () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) return; // guest user, nothing to refresh
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+        const res = await fetch(`${apiUrl}/auth/refresh`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.token) {
+            localStorage.setItem('authToken', data.token);
+          }
+        }
+      } catch {
+        // Silent — if refresh fails, user will just hit auth later; not worth interrupting the call
+      }
+    };
+
+    const interval = setInterval(refresh, REFRESH_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, []);
+
   // Hook into Speech Recognition to track audio and send chunks to backend
   useTranscription({
     micOn,
@@ -158,6 +229,16 @@ export default function MeetingPage() {
     },
   });
 
+  useEffect(() => {
+    if (meetingEndedMsg) {
+      alert(meetingEndedMsg);
+      // Use hard navigation instead of React navigate+reload combo:
+      // navigate() triggers a soft route change and then reload() interrupts it, causing blank screen.
+      executeCommand("hangup");
+      window.location.href = `/meetings/entry/${roomId}`;
+    }
+  }, [meetingEndedMsg, executeCommand, roomId]);
+
   const openChat = () => {
     setShowChat(true);
     setShowParticipants(false);
@@ -179,6 +260,14 @@ export default function MeetingPage() {
   };
   const openDocs = () => {
     setShowDocs(true);
+    setShowAi(false);
+    setShowParticipants(false);
+    setShowChat(false);
+    setShowTranscript(false);
+  };
+  const openTranscript = () => {
+    setShowTranscript(true);
+    setShowDocs(false);
     setShowAi(false);
     setShowParticipants(false);
     setShowChat(false);
@@ -204,10 +293,22 @@ export default function MeetingPage() {
   };
 
   const handleEndCall = () => {
+    if (state?.role === "host") {
+      const confirmEnd = window.confirm("Do you want to end the meeting for everyone?");
+      if (confirmEnd) {
+        // Emit to kick everyone else out, then navigate HOST away immediately.
+        // Don't wait for the socket echo — the host's event loop can't reliably
+        // receive the 'meeting:ended' broadcast it just triggered.
+        socketRef.current?.emit("meeting:end");
+        executeCommand("hangup");
+        window.location.href = `/meetings/entry/${roomId}`;
+        return;
+      }
+    }
+    
+    // Participant behavior: just leave the room
     executeCommand("hangup");
-    navigate(`/meetings/entry/${roomId}`, {
-      state: { role: state?.role ?? "participant" },
-    });
+    window.location.href = `/meetings/entry/${roomId}`;
   };
 
   if (loadingCredentials) {
@@ -244,6 +345,8 @@ export default function MeetingPage() {
               <SharedDocumentViewer 
                  url={presentState.url}
                  page={presentState.page || 1}
+                 fileType={presentState.fileType || 'pdf'}
+                 isHost={state?.role === 'host'}
                  followHost={followHost}
                  onPageChange={(page) => {
                     setPresentState(prev => ({...prev, page}));
@@ -257,6 +360,10 @@ export default function MeetingPage() {
                     setFollowHost(true);
                     socketRef.current.emit("meeting:set_follow_host", { followHost: true });
                  }}
+                 onStopPresenting={state?.role === 'host' ? () => {
+                    setPresentState(null);
+                    socketRef.current.emit("present:update", { url: null, docId: null, page: 1, fileType: null });
+                 } : null}
               />
             </div>
         )}
@@ -292,11 +399,17 @@ export default function MeetingPage() {
             meetingId={roomId} 
             onClose={() => setShowDocs(false)} 
             onPresentDocument={(doc) => {
-                const payload = { url: doc.fileUrl, docId: doc._id, page: 1 };
+                const payload = { url: doc.fileUrl, docId: doc._id, page: 1, fileType: doc.fileType || 'pdf' };
                 setPresentState(payload);
                 socketRef.current.emit("present:update", payload);
                 setShowDocs(false);
             }}
+          />
+        )}
+        {showTranscript && (
+          <TranscriptPanel 
+            transcripts={transcripts}
+            onClose={() => setShowTranscript(false)}
           />
         )}
       </div>
@@ -312,6 +425,7 @@ export default function MeetingPage() {
         showParticipants={showParticipants}
         showAi={showAi}
         showDocs={showDocs}
+        showTranscript={showTranscript}
         unreadCount={unreadCount}
         onToggleMic={handleToggleMic}
         onToggleCam={handleToggleCam}
@@ -321,6 +435,7 @@ export default function MeetingPage() {
         onOpenParticipants={openParticipants}
         onOpenAi={openAi}
         onOpenDocs={openDocs}
+        onOpenTranscript={openTranscript}
         onEndCall={handleEndCall}
       />
     </div>
