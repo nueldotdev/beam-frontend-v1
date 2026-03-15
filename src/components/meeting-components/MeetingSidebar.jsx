@@ -106,11 +106,7 @@ function MeetingSidebar({
 
         {tab === "transcribe" && (
           <div className="sidebar-transcribe">
-<<<<<<< HEAD
-          <Transciption />
-=======
             <RiVoiceAiLine size={50} />
->>>>>>> c56296ba25cc450c557bbe50aada778765bf0d40
           </div>
         )}
       </div>
