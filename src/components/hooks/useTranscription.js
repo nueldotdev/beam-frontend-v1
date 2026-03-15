@@ -3,24 +3,46 @@ import { useState, useEffect, useRef } from "react";
 export function useTranscription({ micOn, onTranscriptChunk }) {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
+  const callbackRef = useRef(onTranscriptChunk);
+  const micOnRef = useRef(micOn);
+
+  // Keep callback ref up to date to avoid restarts
+  useEffect(() => {
+    callbackRef.current = onTranscriptChunk;
+  }, [onTranscriptChunk]);
+
+  // Keep micOn ref up to date for the onend handler
+  useEffect(() => {
+    micOnRef.current = micOn;
+  }, [micOn]);
 
   useEffect(() => {
-    // Check for browser support
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
     if (!SpeechRecognition) {
       console.warn("Speech Recognition API is not supported in this browser.");
       return;
     }
 
-    let isMounted = true;
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "en-US";
 
-    recognition.onstart = () => {
-      setIsListening(true);
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => {
+      setIsListening(false);
+      // Restart if mic is still supposed to be on
+      if (micOnRef.current) {
+        try {
+          recognition.start();
+        } catch (e) {
+          console.error("Failed to restart recognition:", e);
+        }
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error", event.error);
     };
 
     recognition.onresult = (event) => {
@@ -30,38 +52,20 @@ export function useTranscription({ micOn, onTranscriptChunk }) {
           finalTranscript += event.results[i][0].transcript;
         }
       }
-
-      if (finalTranscript.trim() && onTranscriptChunk) {
-        onTranscriptChunk(finalTranscript.trim());
-      }
-    };
-
-    recognition.onerror = (event) => {
-      console.error("Speech recognition error", event.error);
-    };
-
-    recognition.onend = () => {
-      // If mic is still supposed to be on, restart recognition.
-      if (micOn && isMounted) {
-        try {
-          recognition.start();
-        } catch (e) {
-          console.error("Failed to restart recognition:", e);
-        }
-      } else {
-        setIsListening(false);
+      if (finalTranscript.trim() && callbackRef.current) {
+        callbackRef.current(finalTranscript.trim());
       }
     };
 
     recognitionRef.current = recognition;
 
     return () => {
-      isMounted = false;
       if (recognitionRef.current) {
+        recognitionRef.current.onend = null; // Prevent restart on unmount
         recognitionRef.current.stop();
       }
     };
-  }, [onTranscriptChunk, micOn]); // Re-attach when micOn state changes
+  }, []);
 
   useEffect(() => {
     if (!recognitionRef.current) return;
@@ -70,11 +74,10 @@ export function useTranscription({ micOn, onTranscriptChunk }) {
       try {
         recognitionRef.current.start();
       } catch (e) {
-        console.error("Error starting speech recognition:", e);
+        // Recognition might already be starting or started
       }
     } else if (!micOn && isListening) {
       recognitionRef.current.stop();
-      setIsListening(false);
     }
   }, [micOn, isListening]);
 

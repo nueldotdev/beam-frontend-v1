@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 
@@ -191,13 +191,15 @@ export default function MeetingPage() {
   }, []);
 
   // Hook into Speech Recognition to track audio and send chunks to backend
+  const handleTranscriptChunk = useCallback((content) => {
+    if (socketRef.current) {
+      socketRef.current.emit("transcript:chunk", { content, isFinal: true });
+    }
+  }, []);
+
   useTranscription({
     micOn,
-    onTranscriptChunk: (content) => {
-      if (socketRef.current) {
-        socketRef.current.emit("transcript:chunk", { content, isFinal: true });
-      }
-    },
+    onTranscriptChunk: handleTranscriptChunk,
   });
 
   const { executeCommand } = useJitsi({

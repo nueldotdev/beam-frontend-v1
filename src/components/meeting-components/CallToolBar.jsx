@@ -45,6 +45,8 @@ export function CallToolbar({
   camOn,
   screenSharing,
   handRaised,
+  showChat,
+  showParticipants,
   showAi,
   showDocs,
   showTranscript,
