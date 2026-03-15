@@ -7,7 +7,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/DashBoard";
 import OAuthPage from "./components/OAuthSuccess";
 import { MeetingEntry } from "./pages/meetings/MeetingEntry";
-import MeetingPage from "./pages/meetings/MeetingPage"; // ← new
+import MeetingPage from "./pages/meetings/MeetingPage";
 
 function App() {
   return (
@@ -19,7 +19,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard/*" element={<Dashboard />} />
         <Route path="/meetings/entry/:id?" element={<MeetingEntry />} />
-        <Route path="/meetings/live/:id?" element={<MeetingPage />} /> // ← updated
+        <Route path="/meetings/live/:id?" element={<MeetingPage />} />
       </Routes>
     </Router>
   );

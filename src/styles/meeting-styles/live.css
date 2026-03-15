@@ -1,5 +1,5 @@
 /* live.css */
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@300;400;500&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@300;400;500&display=swap");
 
 :root {
   --bg-primary: #202124;
@@ -27,7 +27,7 @@
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'Google Sans', 'Roboto', sans-serif;
+  font-family: "Google Sans", "Roboto", sans-serif;
 }
 
 /* ── Layout ───────────────────────────────────────────── */
@@ -64,7 +64,7 @@ body {
   border-radius: var(--tile-radius);
   aspect-ratio: 16 / 9;
   width: 100%;
-  max-width: 900px;      /* ensures a single large tile won't stretch too much */
+  max-width: 900px; /* ensures a single large tile won't stretch too much */
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -155,7 +155,7 @@ body {
   font-size: 13px;
   font-weight: 500;
   color: #fff;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -195,9 +195,15 @@ body {
 }
 
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .avatar-large {
@@ -215,8 +221,13 @@ body {
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 rgba(255,255,255,0.2); }
-  50% { box-shadow: 0 0 20px rgba(255,255,255,0.35); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.35);
+  }
 }
 
 /* Host remove button — top right */
@@ -235,7 +246,9 @@ body {
   display: none;
   align-items: center;
   justify-content: center;
-  transition: background var(--transition), transform var(--transition);
+  transition:
+    background var(--transition),
+    transform var(--transition);
   line-height: 1;
 }
 
@@ -270,7 +283,9 @@ body {
   color: var(--text-primary);
   font-family: inherit;
   outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition);
 }
 
 .host-controls input::placeholder {
@@ -292,7 +307,9 @@ body {
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: background var(--transition), transform var(--transition);
+  transition:
+    background var(--transition),
+    transform var(--transition);
 }
 
 .host-controls button:hover {
@@ -332,7 +349,9 @@ body {
   justify-content: center;
   font-size: 20px;
   cursor: pointer;
-  transition: background var(--transition), transform var(--transition);
+  transition:
+    background var(--transition),
+    transform var(--transition);
   position: relative;
 }
 
@@ -421,7 +440,7 @@ body {
     width: 80%;
     right: 0;
     top: 10px;
-    height: 100vh;    
+    height: 100vh;
   }
   .sidebar-tab {
     padding: 6px 8px;
@@ -434,8 +453,14 @@ body {
 }
 
 @keyframes slide-in {
-  from { transform: translateX(100%); opacity: 0; }
-  to   { transform: translateX(0);    opacity: 1; }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .sidebar-header {
@@ -462,7 +487,9 @@ body {
   border-radius: 20px;
   cursor: pointer;
   font-family: inherit;
-  transition: background var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition);
 }
 
 .sidebar-tab:hover {
@@ -491,7 +518,7 @@ body {
   color: var(--text-primary);
 }
 
-.sidebar-transcribe{
+.sidebar-transcribe {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -567,7 +594,9 @@ body {
   padding: 2px 6px;
   border-radius: 4px;
   opacity: 0;
-  transition: opacity var(--transition), color var(--transition);
+  transition:
+    opacity var(--transition),
+    color var(--transition);
 }
 
 .participant-row:hover .participant-row__remove {

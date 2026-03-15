@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import "../styles/chat.css";
 import { LuMessageCircleMore } from "react-icons/lu";
-import { MessageCircleCheck, MessageCircleIcon, MessageCircleOff, MessageSquareDashedIcon } from "lucide-react";
+import {
+  MessageCircleCheck,
+  MessageCircleIcon,
+  MessageCircleOff,
+  MessageSquareDashedIcon,
+} from "lucide-react";
 import { TbMessageCircleCode } from "react-icons/tb";
 
 function Chat() {
@@ -27,19 +32,16 @@ function Chat() {
 
   return (
     <div className="minimal-chat-page">
-
       {/* Chat Header */}
-      <div className="chat-header">
-        Live Meeting Chat
-      </div>
+      <div className="chat-header">Live Meeting Chat</div>
 
       {/* Messages */}
       <div className="chat-messages">
         {messages.length === 0 ? (
-          
           <div className="empty">
-            <LuMessageCircleMore size={100}/>
-            No messages yet</div>
+            <LuMessageCircleMore size={100} />
+            No messages yet
+          </div>
         ) : (
           messages.map((msg) => (
             <div

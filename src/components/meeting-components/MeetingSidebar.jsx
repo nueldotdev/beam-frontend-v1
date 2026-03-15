@@ -4,7 +4,15 @@ import { RiVoiceAiLine } from "react-icons/ri";
 import { AlignCenter } from "lucide-react";
 import Transciption from "../Transcription";
 
-function MeetingSidebar({ tab, onTabChange, onClose, host, participants, onAddParticipant, onRemoveParticipant }) {
+function MeetingSidebar({
+  tab,
+  onTabChange,
+  onClose,
+  host,
+  participants,
+  onAddParticipant,
+  onRemoveParticipant,
+}) {
   const [newName, setNewName] = React.useState("");
   const totalCount = (participants?.length || 0) + 1;
 
@@ -17,7 +25,6 @@ function MeetingSidebar({ tab, onTabChange, onClose, host, participants, onAddPa
 
   return (
     <aside className="meeting-sidebar">
-
       <div className="sidebar-header">
         <div className="sidebar-tabs">
           <button
@@ -32,23 +39,26 @@ function MeetingSidebar({ tab, onTabChange, onClose, host, participants, onAddPa
           >
             Chat
           </button>
-           <button
+          <button
             className={`sidebar-tab ${tab === "transcribe" ? "sidebar-tab--active" : ""}`}
             onClick={() => onTabChange("transcribe")}
           >
             Transcribe
           </button>
         </div>
-        <button className="sidebar-close" onClick={onClose}>✕</button>
+        <button className="sidebar-close" onClick={onClose}>
+          ✕
+        </button>
       </div>
 
       <div className="sidebar-content">
         {tab === "participants" && (
           <div className="sidebar-participants">
-
             {/* Host row */}
             <div className="participant-row">
-              <div className="participant-row__avatar">{host?.initials || "?"}</div>
+              <div className="participant-row__avatar">
+                {host?.initials || "?"}
+              </div>
               <span className="participant-row__name">
                 {host?.name || "You"} <span className="badge">Host</span>
               </span>
@@ -67,7 +77,9 @@ function MeetingSidebar({ tab, onTabChange, onClose, host, participants, onAddPa
                   <button
                     className="participant-row__remove"
                     onClick={() => onRemoveParticipant?.(p.id)}
-                  >✕</button>
+                  >
+                    ✕
+                  </button>
                 </div>
               </div>
             ))}
@@ -83,7 +95,6 @@ function MeetingSidebar({ tab, onTabChange, onClose, host, participants, onAddPa
               />
               <button onClick={handleAdd}>Add</button>
             </div>
-
           </div>
         )}
 
@@ -95,12 +106,14 @@ function MeetingSidebar({ tab, onTabChange, onClose, host, participants, onAddPa
 
         {tab === "transcribe" && (
           <div className="sidebar-transcribe">
+<<<<<<< HEAD
           <Transciption />
+=======
+            <RiVoiceAiLine size={50} />
+>>>>>>> c56296ba25cc450c557bbe50aada778765bf0d40
           </div>
         )}
-
       </div>
-
     </aside>
   );
 }
