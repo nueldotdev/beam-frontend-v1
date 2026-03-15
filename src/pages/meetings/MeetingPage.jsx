@@ -13,7 +13,7 @@ import { ParticipantsPanel } from "../../components/meeting-components/Participa
 import { AiChatPanel } from "../../components/meeting-components/AiChatPanel.jsx";
 import { DocumentSidebar } from "../../components/meeting-components/DocumentSidebar.jsx";
 import { SharedDocumentViewer } from "../../components/meeting-components/SharedDocumentViewer.jsx";
-import { TranscriptPanel } from "../../components/meeting-components/TranscriptPanel.jsx";
+import { LiveCaptions } from "../../components/meeting-components/LiveCaptions.jsx";
 
 import "../../styles/meeting-styles/meetingPage.css";
 
@@ -40,7 +40,10 @@ export default function MeetingPage() {
   const [messages, setMessages] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [transcripts, setTranscripts] = useState([]);
-  const [showTranscript, setShowTranscript] = useState(false);
+  const [showCaptions, setShowCaptions] = useState(true);
+  const [latestTranscripts, setLatestTranscripts] = useState([]); // last 2 speakers
+  const [currentInterim, setCurrentInterim] = useState(""); // local user interim
+  const [remoteInterims, setRemoteInterims] = useState({}); // { socketId: { name, content } }
   const [participants, setParticipants] = useState([
     { name: displayName, isSelf: true, audioMuted: !startMicOn },
   ]);
@@ -88,8 +91,31 @@ export default function MeetingPage() {
     });
 
     socketRef.current.on("transcript:chunk", (chunk) => {
+        const speakerId = chunk.speaker?.socketId;
+        const isSelf = speakerId === socketRef.current.id;
+
         if (chunk.isFinal) {
+            // Remove from interims when finalized
+            setRemoteInterims(prev => {
+              const next = { ...prev };
+              delete next[speakerId];
+              return next;
+            });
+
             setTranscripts((prev) => [...prev, chunk]);
+            setLatestTranscripts((prev) => {
+              const newList = [...prev, chunk];
+              return newList.slice(-2);
+            });
+        } else if (!isSelf) {
+            // Update remote interims
+            setRemoteInterims(prev => ({
+              ...prev,
+              [speakerId]: {
+                name: chunk.speaker?.displayName || "Unknown",
+                content: chunk.content
+              }
+            }));
         }
     });
 
@@ -193,13 +219,46 @@ export default function MeetingPage() {
   // Hook into Speech Recognition to track audio and send chunks to backend
   const handleTranscriptChunk = useCallback((content) => {
     if (socketRef.current) {
-      socketRef.current.emit("transcript:chunk", { content, isFinal: true });
+      console.log(`[MeetingPage] Emitting transcript chunk. User: "${displayName}", Content: "${content}"`);
+      socketRef.current.emit("transcript:chunk", { 
+        content, 
+        isFinal: true,
+        displayName: displayName
+      });
+      setCurrentInterim(""); // Clear interim when a final chunk is sent
+    } else {
+      console.warn("[MeetingPage] socketRef.current is null, cannot emit transcript chunk.");
     }
-  }, []);
+  }, [displayName]);
+
+  // Timeout to clear captions after 2 seconds of silence
+  useEffect(() => {
+    if (latestTranscripts.length === 0 && !currentInterim && Object.keys(remoteInterims).length === 0) return;
+
+    const timer = setTimeout(() => {
+      setLatestTranscripts([]);
+      setCurrentInterim("");
+      setRemoteInterims({});
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [latestTranscripts, currentInterim, remoteInterims]);
+
+  const handleTranscriptInterim = useCallback((content) => {
+    setCurrentInterim(content);
+    if (socketRef.current) {
+      socketRef.current.emit("transcript:chunk", { 
+        content, 
+        isFinal: false,
+        displayName: displayName
+      });
+    }
+  }, [displayName]);
 
   useTranscription({
     micOn,
     onTranscriptChunk: handleTranscriptChunk,
+    onTranscriptInterim: handleTranscriptInterim,
   });
 
   const { executeCommand } = useJitsi({
@@ -233,11 +292,8 @@ export default function MeetingPage() {
 
   useEffect(() => {
     if (meetingEndedMsg) {
-      alert(meetingEndedMsg);
-      // Use hard navigation instead of React navigate+reload combo:
-      // navigate() triggers a soft route change and then reload() interrupts it, causing blank screen.
       executeCommand("hangup");
-      window.location.href = `/meetings/entry/${roomId}`;
+      navigate('/meetings/left');
     }
   }, [meetingEndedMsg, executeCommand, roomId]);
 
@@ -265,14 +321,9 @@ export default function MeetingPage() {
     setShowAi(false);
     setShowParticipants(false);
     setShowChat(false);
-    setShowTranscript(false);
   };
-  const openTranscript = () => {
-    setShowTranscript(true);
-    setShowDocs(false);
-    setShowAi(false);
-    setShowParticipants(false);
-    setShowChat(false);
+  const toggleCaptions = () => {
+    setShowCaptions(prev => !prev);
   };
 
   const handleToggleMic = () => {
@@ -303,14 +354,14 @@ export default function MeetingPage() {
         // receive the 'meeting:ended' broadcast it just triggered.
         socketRef.current?.emit("meeting:end");
         executeCommand("hangup");
-        window.location.href = `/meetings/entry/${roomId}`;
+        navigate(`/meetings/${roomId}/summary`, { state: { role: 'host' } });
         return;
       }
     }
     
     // Participant behavior: just leave the room
     executeCommand("hangup");
-    window.location.href = `/meetings/entry/${roomId}`;
+    navigate('/meetings/left');
   };
 
   if (loadingCredentials) {
@@ -344,29 +395,39 @@ export default function MeetingPage() {
         
         {presentState?.url && (
             <div style={{ flex: 1, minWidth: '400px', height: '100%', borderRight: '1px solid #333' }}>
-              <SharedDocumentViewer 
-                 url={presentState.url}
-                 page={presentState.page || 1}
-                 fileType={presentState.fileType || 'pdf'}
-                 isHost={state?.role === 'host'}
-                 followHost={followHost}
-                 onPageChange={(page) => {
-                    setPresentState(prev => ({...prev, page}));
-                    setFollowHost(false); // decoupled from host
-                    socketRef.current.emit("browse:update", { page });
-                    if (state?.role === "host") {
-                       socketRef.current.emit("present:update", { page });
-                    }
-                 }}
-                 onToggleFollow={() => {
-                    setFollowHost(true);
-                    socketRef.current.emit("meeting:set_follow_host", { followHost: true });
-                 }}
-                 onStopPresenting={state?.role === 'host' ? () => {
-                    setPresentState(null);
-                    socketRef.current.emit("present:update", { url: null, docId: null, page: 1, fileType: null });
-                 } : null}
-              />
+               <SharedDocumentViewer 
+                  url={presentState.url}
+                  page={presentState.page || 1}
+                  fileType={presentState.fileType || 'pdf'}
+                  isHost={state?.role === 'host'}
+                  followHost={followHost}
+                  onPageChange={(page) => {
+                     setPresentState(prev => ({...prev, page}));
+                     // If we are currently "following" or are the "presenter", we might want to sync
+                     // But the user said "independent viewing". So we usually decouple on manual browse.
+                     if (followHost) setFollowHost(false); 
+                     
+                     // If this was a global presentation and user is host/presenter, they might want to sync page?
+                     // Let's keep it simple: manual browse is always personal unless they "Present to All" again.
+                     // Wait, if they ARE presenting, they might want to sync. 
+                     // The user said: "any member can open it on their end without having to watch or follow moderator"
+                     // "this means tho that everybody should have a close button that is scoped only to them"
+                  }}
+                  onToggleFollow={() => {
+                     setFollowHost(true);
+                     // Logic to fetch current host state if needed, but for now we rely on socket updates
+                  }}
+                  onStopPresenting={state?.role === 'host' ? () => {
+                     socketRef.current.emit("present:update", { url: null, docId: null, page: 1, fileType: null });
+                     setPresentState(null);
+                  } : null}
+                  onPresentToAll={() => {
+                     socketRef.current.emit("present:update", presentState);
+                  }}
+                  onClose={() => {
+                     setPresentState(null);
+                  }}
+               />
             </div>
         )}
 
@@ -400,21 +461,25 @@ export default function MeetingPage() {
           <DocumentSidebar 
             meetingId={roomId} 
             onClose={() => setShowDocs(false)} 
-            onPresentDocument={(doc) => {
+            onOpenDocument={(doc) => {
                 const payload = { url: doc.fileUrl, docId: doc._id, page: 1, fileType: doc.fileType || 'pdf' };
                 setPresentState(payload);
-                socketRef.current.emit("present:update", payload);
+                setFollowHost(false); // When I open something, I stop following others
                 setShowDocs(false);
             }}
           />
         )}
-        {showTranscript && (
-          <TranscriptPanel 
-            transcripts={transcripts}
-            onClose={() => setShowTranscript(false)}
+
+        {showCaptions && (
+          <LiveCaptions 
+            latestTranscripts={latestTranscripts} 
+            currentInterim={currentInterim}
+            remoteInterims={remoteInterims}
+            selfName={displayName} 
           />
         )}
       </div>
+
 
       <CallToolbar
         displayName={displayName}
@@ -427,7 +492,7 @@ export default function MeetingPage() {
         showParticipants={showParticipants}
         showAi={showAi}
         showDocs={showDocs}
-        showTranscript={showTranscript}
+        showCaptions={showCaptions}
         unreadCount={unreadCount}
         onToggleMic={handleToggleMic}
         onToggleCam={handleToggleCam}
@@ -437,7 +502,7 @@ export default function MeetingPage() {
         onOpenParticipants={openParticipants}
         onOpenAi={openAi}
         onOpenDocs={openDocs}
-        onOpenTranscript={openTranscript}
+        onToggleCaptions={toggleCaptions}
         onEndCall={handleEndCall}
       />
     </div>

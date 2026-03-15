@@ -8,17 +8,19 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 /**
  * SharedDocumentViewer
  * Renders PDFs, images, and PPTX files in the meeting.
- * Props:
- *  - url          : string - Cloudinary URL of the file
- *  - page         : number - current page (for PDF)
- *  - fileType     : 'pdf' | 'image' | 'pptx'
- *  - isHost       : bool  - whether current user is the host
- *  - followHost   : bool  - whether participant is following host pages
- *  - onPageChange : fn(page) - called when user changes page
- *  - onToggleFollow: fn() - called to re-sync to host
- *  - onStopPresenting: fn() | null - if provided (host only), shows Stop button
  */
-export function SharedDocumentViewer({ url, page, fileType = 'pdf', isHost, onPageChange, followHost, onToggleFollow, onStopPresenting }) {
+export function SharedDocumentViewer({ 
+  url, 
+  page, 
+  fileType = 'pdf', 
+  isHost, 
+  onPageChange, 
+  followHost, 
+  onToggleFollow, 
+  onStopPresenting,
+  onPresentToAll,
+  onClose
+}) {
   const [numPages, setNumPages] = useState(null);
 
   const onDocumentLoadSuccess = ({ numPages }) => {
@@ -105,9 +107,21 @@ export function SharedDocumentViewer({ url, page, fileType = 'pdf', isHost, onPa
         {fileType !== 'pdf' && <div />}
 
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          {/* Resync to host — visible to participants only */}
+          {/* Present to All — visible to host or if viewing personal doc */}
+          {onPresentToAll && (
+            <button 
+              onClick={onPresentToAll} 
+              className="btn" 
+              style={{ backgroundColor: '#10b981', color: 'white', fontSize: '12px' }}
+              title="Broadcast this document to everyone in the call"
+            >
+              Present to All
+            </button>
+          )}
+
+          {/* Sync to host — visible to participants only */}
           {!followHost && !isHost && (
-            <button onClick={onToggleFollow} className="btn btn-primary" style={{ backgroundColor: '#2563eb', color: 'white', fontSize: '12px' }}>
+            <button onClick={onToggleFollow} className="btn" style={{ backgroundColor: '#2563eb', color: 'white', fontSize: '12px' }}>
               Sync to Presenter
             </button>
           )}
@@ -123,6 +137,15 @@ export function SharedDocumentViewer({ url, page, fileType = 'pdf', isHost, onPa
               Stop Presenting
             </button>
           )}
+
+          {/* Close — visible to everyone for personal closure */}
+          <button 
+            onClick={onClose} 
+            className="btn" 
+            style={{ backgroundColor: '#4b5563', color: 'white', fontSize: '12px' }}
+          >
+            Close
+          </button>
         </div>
       </div>
 
