@@ -1,10 +1,15 @@
 import React, { useState, useRef } from "react";
 import { uploadMeetingFile } from "../../utils/apicalls";
+import { pdfjs } from "react-pdf";
 import Button from "../Button";
 import { ArrowUp } from "lucide-react";
 
+// Set worker for extraction
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
 function UploadFiles({ meetingId }) {
   const [file, setFile] = useState(null);
+  const [customFilename, setCustomFilename] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -17,22 +22,62 @@ function UploadFiles({ meetingId }) {
   };
 
   const handleFileChange = (e) => {
+    e.preventDefault();
     const f = e.target.files[0];
     if (f) {
       setFile(f);
+      setCustomFilename(f.name);
       setStatus("");
       setProgress(0);
     }
+    // Clear input so same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
   };
 
-  const handleUpload = () => {
+  const determineFileType = (f) => {
+    if (!f) return "pdf";
+    if (f.type.startsWith("image/")) return "image";
+    const name = f.name.toLowerCase();
+    if (name.endsWith(".pptx")) return "pptx";
+    if (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg")) return "image";
+    return "pdf"; 
+  };
+
+  const extractTextFromPdf = async (file) => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+      let fullText = "";
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(" ");
+        fullText += `\n--- [PAGE ${i}] ---\n${pageText}\n`;
+      }
+      return fullText;
+    } catch (err) {
+      console.warn("Failed to extract PDF text:", err);
+      return "";
+    }
+  };
+
+  const handleUpload = async () => {
     if (!file) return;
 
     setLoading(true);
-    setStatus("Uploading...");
+    setStatus("Processing...");
 
-    const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
-    const preset = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
+    let extractedText = "";
+    if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+      setStatus("Extracting text for AI...");
+      extractedText = await extractTextFromPdf(file);
+    }
+
+    setStatus("Uploading...");
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const preset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
     if (!cloudName || !preset) {
       setStatus("Error: Cloudinary config missing");
@@ -44,8 +89,11 @@ function UploadFiles({ meetingId }) {
     formData.append("file", file);
     formData.append("upload_preset", preset);
 
+    const isImage = file.type.startsWith("image/");
+    const resourceType = isImage ? "image" : "raw";
+
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/upload`);
+    xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`);
 
     xhr.upload.addEventListener("progress", (e) => {
       if (e.lengthComputable) {
@@ -60,15 +108,22 @@ function UploadFiles({ meetingId }) {
           try {
             const data = JSON.parse(xhr.responseText);
             const fileUrl = data.secure_url;
+
             setStatus("Notifying server...");
+            const fileType = determineFileType(file);
+            const finalFilename = customFilename.trim() || file.name;
+
             await uploadMeetingFile({
               meetingId,
-              filename: file.name,
-              fileType: "pdf",
+              filename: finalFilename,
+              fileType,
               fileUrl,
               size: file.size,
+              extractedText: extractedText
             });
             setStatus("Upload successful");
+            setFile(null); // Clear after success
+            setProgress(0);
           } catch (err) {
             console.error(err);
             setStatus("Error: " + err.message);
@@ -98,18 +153,26 @@ function UploadFiles({ meetingId }) {
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
+        accept=".pdf, .png, .jpg, .jpeg, .pptx"
         style={{ display: "none" }}
       />
 
       <div className="upload-info">
         {file ? (
           <>
-            <span className="file-name">{file.name}</span>
+            <input
+              className="file-name"
+              value={customFilename}
+              onChange={(e) => setCustomFilename(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              placeholder="File name"
+              style={{ background: 'transparent', border: '1px solid #d1d5db', borderRadius: '4px', padding: '2px 6px', width: '100%', cursor: 'text' }}
+            />
             <span className="file-size">{formatSize(file.size)}</span>
             {status && <p className="upload-status">{status}</p>}
           </>
         ) : (
-          <span className="file-placeholder">Click to select a file</span>
+          <span className="file-placeholder">Click to select a file (PDF, Image, PPTX)</span>
         )}
       </div>
 
@@ -125,7 +188,7 @@ function UploadFiles({ meetingId }) {
               />
               <path
                 className="progress-bar"
-                strokeDasharray={`${progress}, 100"`}
+                strokeDasharray={`${progress}, 100`}
                 d="M18 2.0845
                a 15.9155 15.9155 0 0 1 0 31.831
                a 15.9155 15.9155 0 0 1 0-31.831"

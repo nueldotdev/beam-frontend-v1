@@ -3,7 +3,7 @@ import UploadFiles from "./UploadFiles.jsx";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-export function DocumentSidebar({ meetingId, onClose, onPresentDocument }) {
+export function DocumentSidebar({ meetingId, onClose, onOpenDocument }) {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,7 +19,14 @@ export function DocumentSidebar({ meetingId, onClose, onPresentDocument }) {
       });
       const data = await res.json();
       if (data.success) {
-        setDocuments(data.data);
+        // Filter out any duplicates by fileUrl (can happen if upload fires twice)
+        const seen = new Set();
+        const unique = data.data.filter(doc => {
+          if (seen.has(doc.fileUrl)) return false;
+          seen.add(doc.fileUrl);
+          return true;
+        });
+        setDocuments(unique);
       }
     } catch (e) {
       console.error("Failed to fetch documents", e);
@@ -52,14 +59,14 @@ export function DocumentSidebar({ meetingId, onClose, onPresentDocument }) {
           <div key={doc._id} style={{ border: '1px solid #e5e7eb', padding: '10px', borderRadius: '8px', marginBottom: '10px' }}>
             <p style={{ fontWeight: 'bold', margin: 0, textOverflow: 'ellipsis', overflow: 'hidden' }}>{doc.filename}</p>
             <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-               <button 
-                 className="btn btn-primary" 
-                 onClick={() => onPresentDocument(doc)}
-                 style={{ fontSize: '12px' }}
-               >
-                 Present
-               </button>
-               <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="btn" style={{ fontSize: '12px' }}>Download</a>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={() => onOpenDocument(doc)}
+                  style={{ fontSize: '12px' }}
+                >
+                  Open
+                </button>
+               <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="btn" style={{ fontSize: '12px' }} download={doc.filename}>Download</a>
             </div>
           </div>
         ))}
