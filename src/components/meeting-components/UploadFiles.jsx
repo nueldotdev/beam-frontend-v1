@@ -8,13 +8,42 @@ import { ArrowUp } from "lucide-react";
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 function UploadFiles({ meetingId }) {
-  // ... (keep state)
   const [file, setFile] = useState(null);
   const [customFilename, setCustomFilename] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef(null);
+
+  const formatSize = (bytes) => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  };
+
+  const handleFileChange = (e) => {
+    e.preventDefault();
+    const f = e.target.files[0];
+    if (f) {
+      setFile(f);
+      setCustomFilename(f.name);
+      setStatus("");
+      setProgress(0);
+    }
+    // Clear input so same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
+  };
+
+  const determineFileType = (f) => {
+    if (!f) return "pdf";
+    if (f.type.startsWith("image/")) return "image";
+    const name = f.name.toLowerCase();
+    if (name.endsWith(".pptx")) return "pptx";
+    if (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg")) return "image";
+    return "pdf"; 
+  };
 
   const extractTextFromPdf = async (file) => {
     try {
@@ -90,9 +119,11 @@ function UploadFiles({ meetingId }) {
               fileType,
               fileUrl,
               size: file.size,
-              extractedText: extractedText // Send to backend
+              extractedText: extractedText
             });
             setStatus("Upload successful");
+            setFile(null); // Clear after success
+            setProgress(0);
           } catch (err) {
             console.error(err);
             setStatus("Error: " + err.message);
@@ -157,7 +188,7 @@ function UploadFiles({ meetingId }) {
               />
               <path
                 className="progress-bar"
-                strokeDasharray={`${progress}, 100"`}
+                strokeDasharray={`${progress}, 100`}
                 d="M18 2.0845
                a 15.9155 15.9155 0 0 1 0 31.831
                a 15.9155 15.9155 0 0 1 0-31.831"
