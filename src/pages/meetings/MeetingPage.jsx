@@ -13,7 +13,7 @@ import { ParticipantsPanel } from "../../components/meeting-components/Participa
 import { AiChatPanel } from "../../components/meeting-components/AiChatPanel.jsx";
 import { DocumentSidebar } from "../../components/meeting-components/DocumentSidebar.jsx";
 import { SharedDocumentViewer } from "../../components/meeting-components/SharedDocumentViewer.jsx";
-import { TranscriptPanel } from "../../components/meeting-components/TranscriptPanel.jsx";
+import { LiveCaptions } from "../../components/meeting-components/LiveCaptions.jsx";
 
 import "../../styles/meeting-styles/meetingPage.css";
 
@@ -24,7 +24,8 @@ export default function MeetingPage() {
 
   // Map MeetingEntry's exact state shape
   const displayName = state?.name ?? "Guest";
-  const roomId = resolveRoomId(state?.meetingId || id);
+  const rawRoomId = resolveRoomId(state?.meetingId || id);
+  const roomId = rawRoomId.toUpperCase(); // Normalize early
   const startMicOn = state?.permission?.mic ?? true;
   const startCamOn = state?.permission?.camera ?? true;
 
@@ -40,11 +41,15 @@ export default function MeetingPage() {
   const [messages, setMessages] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [transcripts, setTranscripts] = useState([]);
-  const [showTranscript, setShowTranscript] = useState(false);
+  const [showCaptions, setShowCaptions] = useState(true);
+  const [latestTranscripts, setLatestTranscripts] = useState([]); // last 2 speakers
+  const [currentInterim, setCurrentInterim] = useState(""); // local user interim
+  const [remoteInterims, setRemoteInterims] = useState({}); // { socketId: { name, content } }
   const [participants, setParticipants] = useState([
     { name: displayName, isSelf: true, audioMuted: !startMicOn },
   ]);
 
+  const [isJoined, setIsJoined] = useState(false);
   const [jaasCredentials, setJaasCredentials] = useState(null);
   const [loadingCredentials, setLoadingCredentials] = useState(true);
   const [credentialsError, setCredentialsError] = useState(null);
@@ -52,6 +57,11 @@ export default function MeetingPage() {
   // Synchronized Document State
   const [presentState, setPresentState] = useState(null); // { docId, url, page }
   const [followHost, setFollowHost] = useState(true);
+  const followHostRef = useRef(followHost);
+
+  useEffect(() => {
+    followHostRef.current = followHost;
+  }, [followHost]);
 
   const [meetingEndedMsg, setMeetingEndedMsg] = useState(null);
 
@@ -61,42 +71,86 @@ export default function MeetingPage() {
 
   // Socket connection to send transcriptions and handle documents
   useEffect(() => {
-    socketRef.current = io(import.meta.env.VITE_API_URL?.replace('/api/v1', '') || "http://localhost:3000"); // replace with API endpoint from env in prod
+    // Correctly strip /api or /api/v1 to get the base socket URL
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+    const socketUrl = apiUrl.replace(/\/api(\/v1)?$/, "");
+    
+    console.log(`[Socket] Initializing connection to: ${socketUrl}`);
+    const socket = io(socketUrl, {
+      reconnectionAttempts: 5,
+      timeout: 10000,
+    });
+    socketRef.current = socket;
 
-    socketRef.current.emit("meeting:join", {
-      meetingKey: roomId,
-      displayName,
-      role: state?.role ?? "participant",
-    }, (res) => {
-       if (res?.present) {
-          setPresentState(res.present);
-       }
+    socket.on('connect', () => {
+      const upperRoomId = roomId.toUpperCase();
+      console.log(`[Socket] Connected. ID: ${socket.id}. Emitting join for ${upperRoomId}...`);
+      socket.emit("meeting:join", {
+        meetingKey: upperRoomId,
+        displayName,
+        role: state?.role ?? "participant",
+      }, (res) => {
+         if (res?.ok) {
+           console.log("[Socket] Join successful:", res);
+           setIsJoined(true);
+           if (res.present) setPresentState(res.present);
+         } else {
+           console.error("[Socket] Join failed:", res?.error);
+         }
+      });
     });
 
-    socketRef.current.on("present:updated", (data) => {
-        // If host stopped presenting (null), always clear for everyone
+    socket.on('connect_error', (err) => {
+      console.error("[Socket] Connection error:", err.message);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.warn("[Socket] Disconnected:", reason);
+      setIsJoined(false);
+    });
+
+    socket.on("present:updated", (data) => {
         if (data.present === null) {
             setPresentState(null);
-        } else if (followHost) {
-            // Otherwise only sync pages if participant is following the host
+        } else if (followHostRef.current) {
             setPresentState(data.present);
         }
     });
 
-    socketRef.current.on("meeting:ended", (data) => {
+    socket.on("meeting:ended", (data) => {
         setMeetingEndedMsg(data.message || "The host has ended the meeting.");
     });
 
-    socketRef.current.on("transcript:chunk", (chunk) => {
+    socket.on("transcript:chunk", (chunk) => {
+        const speakerId = chunk.speaker?.socketId;
+        const isSelf = speakerId === socket.id;
+        
+        console.log(`[Socket] Inbound transcript from ${chunk.speaker?.displayName} (Self: ${isSelf})`);
+
         if (chunk.isFinal) {
+            setRemoteInterims(prev => {
+              const next = { ...prev };
+              delete next[speakerId];
+              return next;
+            });
             setTranscripts((prev) => [...prev, chunk]);
+            setLatestTranscripts((prev) => [...prev, chunk].slice(-2));
+        } else if (!isSelf) {
+            setRemoteInterims(prev => ({
+              ...prev,
+              [speakerId]: {
+                name: chunk.speaker?.displayName || "Unknown",
+                content: chunk.content
+              }
+            }));
         }
     });
 
     return () => {
-      socketRef.current?.disconnect();
+      console.log("[Socket] Cleanup: disconnecting socket");
+      socket.disconnect();
     };
-  }, [roomId, displayName, state, followHost]);
+  }, [roomId]); // Only reconnect if roomId changes
 
   // Fetch JaaS Credentials
   useEffect(() => {
@@ -160,15 +214,13 @@ export default function MeetingPage() {
     return () => { mounted = false; };
   }, [roomId]);
 
-  // Proactive token refresh — the default JWT expires in 1h.
-  // While in a meeting we re-issue a fresh 8h token every 45 minutes so
-  // the host's session never drops mid-call.
+  // Proactive token refresh
   useEffect(() => {
     const REFRESH_INTERVAL_MS = 45 * 60 * 1000; // 45 minutes
 
     const refresh = async () => {
       const token = localStorage.getItem('authToken');
-      if (!token) return; // guest user, nothing to refresh
+      if (!token) return;
       try {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
         const res = await fetch(`${apiUrl}/auth/refresh`, {
@@ -182,7 +234,7 @@ export default function MeetingPage() {
           }
         }
       } catch {
-        // Silent — if refresh fails, user will just hit auth later; not worth interrupting the call
+        // Silent
       }
     };
 
@@ -192,14 +244,45 @@ export default function MeetingPage() {
 
   // Hook into Speech Recognition to track audio and send chunks to backend
   const handleTranscriptChunk = useCallback((content) => {
-    if (socketRef.current) {
-      socketRef.current.emit("transcript:chunk", { content, isFinal: true });
+    if (socketRef.current?.connected && isJoined) {
+      console.log(`[MeetingPage] Emitting transcript chunk. User: "${displayName}", Content: "${content}"`);
+      socketRef.current.emit("transcript:chunk", { 
+        content, 
+        isFinal: true,
+        displayName: displayName
+      });
+      setCurrentInterim(""); 
     }
-  }, []);
+  }, [displayName, isJoined]);
+
+  // Timeout to clear captions after 7 seconds of silence
+  useEffect(() => {
+    if (latestTranscripts.length === 0 && !currentInterim && Object.keys(remoteInterims).length === 0) return;
+
+    const timer = setTimeout(() => {
+      setLatestTranscripts([]);
+      setCurrentInterim("");
+      setRemoteInterims({});
+    }, 7000);
+
+    return () => clearTimeout(timer);
+  }, [latestTranscripts, currentInterim, remoteInterims]);
+
+  const handleTranscriptInterim = useCallback((content) => {
+    setCurrentInterim(content);
+    if (socketRef.current?.connected && isJoined) {
+      socketRef.current.emit("transcript:chunk", { 
+        content, 
+        isFinal: false,
+        displayName: displayName
+      });
+    }
+  }, [displayName, isJoined]);
 
   useTranscription({
     micOn,
     onTranscriptChunk: handleTranscriptChunk,
+    onTranscriptInterim: handleTranscriptInterim,
   });
 
   const { executeCommand } = useJitsi({
@@ -233,11 +316,8 @@ export default function MeetingPage() {
 
   useEffect(() => {
     if (meetingEndedMsg) {
-      alert(meetingEndedMsg);
-      // Use hard navigation instead of React navigate+reload combo:
-      // navigate() triggers a soft route change and then reload() interrupts it, causing blank screen.
       executeCommand("hangup");
-      window.location.href = `/meetings/entry/${roomId}`;
+      navigate('/meetings/left');
     }
   }, [meetingEndedMsg, executeCommand, roomId]);
 
@@ -265,14 +345,9 @@ export default function MeetingPage() {
     setShowAi(false);
     setShowParticipants(false);
     setShowChat(false);
-    setShowTranscript(false);
   };
-  const openTranscript = () => {
-    setShowTranscript(true);
-    setShowDocs(false);
-    setShowAi(false);
-    setShowParticipants(false);
-    setShowChat(false);
+  const toggleCaptions = () => {
+    setShowCaptions(prev => !prev);
   };
 
   const handleToggleMic = () => {
@@ -298,19 +373,15 @@ export default function MeetingPage() {
     if (state?.role === "host") {
       const confirmEnd = window.confirm("Do you want to end the meeting for everyone?");
       if (confirmEnd) {
-        // Emit to kick everyone else out, then navigate HOST away immediately.
-        // Don't wait for the socket echo — the host's event loop can't reliably
-        // receive the 'meeting:ended' broadcast it just triggered.
         socketRef.current?.emit("meeting:end");
         executeCommand("hangup");
-        window.location.href = `/meetings/entry/${roomId}`;
+        navigate(`/meetings/${roomId}/summary`, { state: { role: 'host' } });
         return;
       }
     }
     
-    // Participant behavior: just leave the room
     executeCommand("hangup");
-    window.location.href = `/meetings/entry/${roomId}`;
+    navigate('/meetings/left');
   };
 
   if (loadingCredentials) {
@@ -344,33 +415,33 @@ export default function MeetingPage() {
         
         {presentState?.url && (
             <div style={{ flex: 1, minWidth: '400px', height: '100%', borderRight: '1px solid #333' }}>
-              <SharedDocumentViewer 
-                 url={presentState.url}
-                 page={presentState.page || 1}
-                 fileType={presentState.fileType || 'pdf'}
-                 isHost={state?.role === 'host'}
-                 followHost={followHost}
-                 onPageChange={(page) => {
-                    setPresentState(prev => ({...prev, page}));
-                    setFollowHost(false); // decoupled from host
-                    socketRef.current.emit("browse:update", { page });
-                    if (state?.role === "host") {
-                       socketRef.current.emit("present:update", { page });
-                    }
-                 }}
-                 onToggleFollow={() => {
-                    setFollowHost(true);
-                    socketRef.current.emit("meeting:set_follow_host", { followHost: true });
-                 }}
-                 onStopPresenting={state?.role === 'host' ? () => {
-                    setPresentState(null);
-                    socketRef.current.emit("present:update", { url: null, docId: null, page: 1, fileType: null });
-                 } : null}
-              />
+               <SharedDocumentViewer 
+                  url={presentState.url}
+                  page={presentState.page || 1}
+                  fileType={presentState.fileType || 'pdf'}
+                  isHost={state?.role === 'host'}
+                  followHost={followHost}
+                  onPageChange={(page) => {
+                     setPresentState(prev => ({...prev, page}));
+                     if (followHost) setFollowHost(false); 
+                  }}
+                  onToggleFollow={() => {
+                     setFollowHost(true);
+                  }}
+                  onStopPresenting={state?.role === 'host' ? () => {
+                     socketRef.current.emit("present:update", { url: null, docId: null, page: 1, fileType: null });
+                     setPresentState(null);
+                  } : null}
+                  onPresentToAll={() => {
+                     socketRef.current.emit("present:update", presentState);
+                  }}
+                  onClose={() => {
+                     setPresentState(null);
+                  }}
+               />
             </div>
         )}
 
-        {/* Ensure Jitsi container adapts its width based on presentation */}
         <div 
           ref={jitsiContainerRef} 
           className="video-jitsi-container" 
@@ -400,18 +471,21 @@ export default function MeetingPage() {
           <DocumentSidebar 
             meetingId={roomId} 
             onClose={() => setShowDocs(false)} 
-            onPresentDocument={(doc) => {
+            onOpenDocument={(doc) => {
                 const payload = { url: doc.fileUrl, docId: doc._id, page: 1, fileType: doc.fileType || 'pdf' };
                 setPresentState(payload);
-                socketRef.current.emit("present:update", payload);
+                setFollowHost(false);
                 setShowDocs(false);
             }}
           />
         )}
-        {showTranscript && (
-          <TranscriptPanel 
-            transcripts={transcripts}
-            onClose={() => setShowTranscript(false)}
+
+        {showCaptions && (
+          <LiveCaptions 
+            latestTranscripts={latestTranscripts} 
+            currentInterim={currentInterim}
+            remoteInterims={remoteInterims}
+            selfName={displayName} 
           />
         )}
       </div>
@@ -427,7 +501,7 @@ export default function MeetingPage() {
         showParticipants={showParticipants}
         showAi={showAi}
         showDocs={showDocs}
-        showTranscript={showTranscript}
+        showCaptions={showCaptions}
         unreadCount={unreadCount}
         onToggleMic={handleToggleMic}
         onToggleCam={handleToggleCam}
@@ -437,7 +511,7 @@ export default function MeetingPage() {
         onOpenParticipants={openParticipants}
         onOpenAi={openAi}
         onOpenDocs={openDocs}
-        onOpenTranscript={openTranscript}
+        onToggleCaptions={toggleCaptions}
         onEndCall={handleEndCall}
       />
     </div>

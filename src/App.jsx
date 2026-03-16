@@ -8,6 +8,8 @@ import Dashboard from "./pages/DashBoard";
 import OAuthPage from "./components/OAuthSuccess";
 import { MeetingEntry } from "./pages/meetings/MeetingEntry";
 import MeetingPage from "./pages/meetings/MeetingPage";
+import { MeetingLeft } from "./pages/meetings/MeetingLeft";
+import MeetingSummary from "./pages/meetings/MeetingSummary";
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
         <Route path="/dashboard/*" element={<Dashboard />} />
         <Route path="/meetings/entry/:id?" element={<MeetingEntry />} />
         <Route path="/meetings/live/:id?" element={<MeetingPage />} />
+        <Route path="/meetings/left" element={<MeetingLeft />} />
+        <Route path="/meetings/:id/summary" element={<MeetingSummary />} />
       </Routes>
     </Router>
   );

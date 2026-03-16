@@ -1,9 +1,14 @@
 import React, { useState, useRef } from "react";
 import { uploadMeetingFile } from "../../utils/apicalls";
+import { pdfjs } from "react-pdf";
 import Button from "../Button";
 import { ArrowUp } from "lucide-react";
 
+// Set worker for extraction
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
 function UploadFiles({ meetingId }) {
+  // ... (keep state)
   const [file, setFile] = useState(null);
   const [customFilename, setCustomFilename] = useState("");
   const [status, setStatus] = useState("");
@@ -11,42 +16,37 @@ function UploadFiles({ meetingId }) {
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef(null);
 
-  const formatSize = (bytes) => {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-  };
-
-  const handleFileChange = (e) => {
-    e.preventDefault();
-    const f = e.target.files[0];
-    if (f) {
-      setFile(f);
-      setCustomFilename(f.name);
-      setStatus("");
-      setProgress(0);
-    }
-    // Clear input so same file can be selected again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = null;
+  const extractTextFromPdf = async (file) => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+      let fullText = "";
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(" ");
+        fullText += `\n--- [PAGE ${i}] ---\n${pageText}\n`;
+      }
+      return fullText;
+    } catch (err) {
+      console.warn("Failed to extract PDF text:", err);
+      return "";
     }
   };
 
-  const determineFileType = (f) => {
-    if (!f) return "pdf";
-    if (f.type.startsWith("image/")) return "image";
-    if (f.name.toLowerCase().endsWith(".pptx")) return "pptx";
-    if (f.name.toLowerCase().endsWith(".png")) return "image";
-    if (f.name.toLowerCase().endsWith(".jpg") || f.name.toLowerCase().endsWith(".jpeg")) return "image";
-    return "pdf"; 
-  };
-
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) return;
 
     setLoading(true);
-    setStatus("Uploading...");
+    setStatus("Processing...");
 
+    let extractedText = "";
+    if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+      setStatus("Extracting text for AI...");
+      extractedText = await extractTextFromPdf(file);
+    }
+
+    setStatus("Uploading...");
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
     const preset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
@@ -60,8 +60,6 @@ function UploadFiles({ meetingId }) {
     formData.append("file", file);
     formData.append("upload_preset", preset);
 
-    // Use 'image' resource_type for actual images, 'raw' for PDFs and PPTX.
-    // Uploading a PDF to /image/upload generates a broken image URL; /raw/upload keeps the file as-is.
     const isImage = file.type.startsWith("image/");
     const resourceType = isImage ? "image" : "raw";
 
@@ -80,12 +78,9 @@ function UploadFiles({ meetingId }) {
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
             const data = JSON.parse(xhr.responseText);
-            // Store the clean Cloudinary URL — no fl_attachment flag.
-            // fl_attachment is an image transformation and breaks raw resource URLs.
             const fileUrl = data.secure_url;
 
             setStatus("Notifying server...");
-            
             const fileType = determineFileType(file);
             const finalFilename = customFilename.trim() || file.name;
 
@@ -95,6 +90,7 @@ function UploadFiles({ meetingId }) {
               fileType,
               fileUrl,
               size: file.size,
+              extractedText: extractedText // Send to backend
             });
             setStatus("Upload successful");
           } catch (err) {
