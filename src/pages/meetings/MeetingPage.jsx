@@ -24,7 +24,8 @@ export default function MeetingPage() {
 
   // Map MeetingEntry's exact state shape
   const displayName = state?.name ?? "Guest";
-  const roomId = resolveRoomId(state?.meetingId || id);
+  const rawRoomId = resolveRoomId(state?.meetingId || id);
+  const roomId = rawRoomId.toUpperCase(); // Normalize early
   const startMicOn = state?.permission?.mic ?? true;
   const startCamOn = state?.permission?.camera ?? true;
 
@@ -48,6 +49,7 @@ export default function MeetingPage() {
     { name: displayName, isSelf: true, audioMuted: !startMicOn },
   ]);
 
+  const [isJoined, setIsJoined] = useState(false);
   const [jaasCredentials, setJaasCredentials] = useState(null);
   const [loadingCredentials, setLoadingCredentials] = useState(true);
   const [credentialsError, setCredentialsError] = useState(null);
@@ -55,6 +57,11 @@ export default function MeetingPage() {
   // Synchronized Document State
   const [presentState, setPresentState] = useState(null); // { docId, url, page }
   const [followHost, setFollowHost] = useState(true);
+  const followHostRef = useRef(followHost);
+
+  useEffect(() => {
+    followHostRef.current = followHost;
+  }, [followHost]);
 
   const [meetingEndedMsg, setMeetingEndedMsg] = useState(null);
 
@@ -64,51 +71,71 @@ export default function MeetingPage() {
 
   // Socket connection to send transcriptions and handle documents
   useEffect(() => {
-    socketRef.current = io(import.meta.env.VITE_API_URL?.replace('/api/v1', '') || "http://localhost:3000"); // replace with API endpoint from env in prod
+    // Correctly strip /api or /api/v1 to get the base socket URL
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+    const socketUrl = apiUrl.replace(/\/api(\/v1)?$/, "");
+    
+    console.log(`[Socket] Initializing connection to: ${socketUrl}`);
+    const socket = io(socketUrl, {
+      reconnectionAttempts: 5,
+      timeout: 10000,
+    });
+    socketRef.current = socket;
 
-    socketRef.current.emit("meeting:join", {
-      meetingKey: roomId,
-      displayName,
-      role: state?.role ?? "participant",
-    }, (res) => {
-       if (res?.present) {
-          setPresentState(res.present);
-       }
+    socket.on('connect', () => {
+      const upperRoomId = roomId.toUpperCase();
+      console.log(`[Socket] Connected. ID: ${socket.id}. Emitting join for ${upperRoomId}...`);
+      socket.emit("meeting:join", {
+        meetingKey: upperRoomId,
+        displayName,
+        role: state?.role ?? "participant",
+      }, (res) => {
+         if (res?.ok) {
+           console.log("[Socket] Join successful:", res);
+           setIsJoined(true);
+           if (res.present) setPresentState(res.present);
+         } else {
+           console.error("[Socket] Join failed:", res?.error);
+         }
+      });
     });
 
-    socketRef.current.on("present:updated", (data) => {
-        // If host stopped presenting (null), always clear for everyone
+    socket.on('connect_error', (err) => {
+      console.error("[Socket] Connection error:", err.message);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.warn("[Socket] Disconnected:", reason);
+      setIsJoined(false);
+    });
+
+    socket.on("present:updated", (data) => {
         if (data.present === null) {
             setPresentState(null);
-        } else if (followHost) {
-            // Otherwise only sync pages if participant is following the host
+        } else if (followHostRef.current) {
             setPresentState(data.present);
         }
     });
 
-    socketRef.current.on("meeting:ended", (data) => {
+    socket.on("meeting:ended", (data) => {
         setMeetingEndedMsg(data.message || "The host has ended the meeting.");
     });
 
-    socketRef.current.on("transcript:chunk", (chunk) => {
+    socket.on("transcript:chunk", (chunk) => {
         const speakerId = chunk.speaker?.socketId;
-        const isSelf = speakerId === socketRef.current.id;
+        const isSelf = speakerId === socket.id;
+        
+        console.log(`[Socket] Inbound transcript from ${chunk.speaker?.displayName} (Self: ${isSelf})`);
 
         if (chunk.isFinal) {
-            // Remove from interims when finalized
             setRemoteInterims(prev => {
               const next = { ...prev };
               delete next[speakerId];
               return next;
             });
-
             setTranscripts((prev) => [...prev, chunk]);
-            setLatestTranscripts((prev) => {
-              const newList = [...prev, chunk];
-              return newList.slice(-2);
-            });
+            setLatestTranscripts((prev) => [...prev, chunk].slice(-2));
         } else if (!isSelf) {
-            // Update remote interims
             setRemoteInterims(prev => ({
               ...prev,
               [speakerId]: {
@@ -120,9 +147,10 @@ export default function MeetingPage() {
     });
 
     return () => {
-      socketRef.current?.disconnect();
+      console.log("[Socket] Cleanup: disconnecting socket");
+      socket.disconnect();
     };
-  }, [roomId, displayName, state, followHost]);
+  }, [roomId]); // Only reconnect if roomId changes
 
   // Fetch JaaS Credentials
   useEffect(() => {
@@ -186,15 +214,13 @@ export default function MeetingPage() {
     return () => { mounted = false; };
   }, [roomId]);
 
-  // Proactive token refresh — the default JWT expires in 1h.
-  // While in a meeting we re-issue a fresh 8h token every 45 minutes so
-  // the host's session never drops mid-call.
+  // Proactive token refresh
   useEffect(() => {
     const REFRESH_INTERVAL_MS = 45 * 60 * 1000; // 45 minutes
 
     const refresh = async () => {
       const token = localStorage.getItem('authToken');
-      if (!token) return; // guest user, nothing to refresh
+      if (!token) return;
       try {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
         const res = await fetch(`${apiUrl}/auth/refresh`, {
@@ -208,7 +234,7 @@ export default function MeetingPage() {
           }
         }
       } catch {
-        // Silent — if refresh fails, user will just hit auth later; not worth interrupting the call
+        // Silent
       }
     };
 
@@ -218,20 +244,18 @@ export default function MeetingPage() {
 
   // Hook into Speech Recognition to track audio and send chunks to backend
   const handleTranscriptChunk = useCallback((content) => {
-    if (socketRef.current) {
+    if (socketRef.current?.connected && isJoined) {
       console.log(`[MeetingPage] Emitting transcript chunk. User: "${displayName}", Content: "${content}"`);
       socketRef.current.emit("transcript:chunk", { 
         content, 
         isFinal: true,
         displayName: displayName
       });
-      setCurrentInterim(""); // Clear interim when a final chunk is sent
-    } else {
-      console.warn("[MeetingPage] socketRef.current is null, cannot emit transcript chunk.");
+      setCurrentInterim(""); 
     }
-  }, [displayName]);
+  }, [displayName, isJoined]);
 
-  // Timeout to clear captions after 2 seconds of silence
+  // Timeout to clear captions after 7 seconds of silence
   useEffect(() => {
     if (latestTranscripts.length === 0 && !currentInterim && Object.keys(remoteInterims).length === 0) return;
 
@@ -239,21 +263,21 @@ export default function MeetingPage() {
       setLatestTranscripts([]);
       setCurrentInterim("");
       setRemoteInterims({});
-    }, 2000);
+    }, 7000);
 
     return () => clearTimeout(timer);
   }, [latestTranscripts, currentInterim, remoteInterims]);
 
   const handleTranscriptInterim = useCallback((content) => {
     setCurrentInterim(content);
-    if (socketRef.current) {
+    if (socketRef.current?.connected && isJoined) {
       socketRef.current.emit("transcript:chunk", { 
         content, 
         isFinal: false,
         displayName: displayName
       });
     }
-  }, [displayName]);
+  }, [displayName, isJoined]);
 
   useTranscription({
     micOn,
@@ -349,9 +373,6 @@ export default function MeetingPage() {
     if (state?.role === "host") {
       const confirmEnd = window.confirm("Do you want to end the meeting for everyone?");
       if (confirmEnd) {
-        // Emit to kick everyone else out, then navigate HOST away immediately.
-        // Don't wait for the socket echo — the host's event loop can't reliably
-        // receive the 'meeting:ended' broadcast it just triggered.
         socketRef.current?.emit("meeting:end");
         executeCommand("hangup");
         navigate(`/meetings/${roomId}/summary`, { state: { role: 'host' } });
@@ -359,7 +380,6 @@ export default function MeetingPage() {
       }
     }
     
-    // Participant behavior: just leave the room
     executeCommand("hangup");
     navigate('/meetings/left');
   };
@@ -403,19 +423,10 @@ export default function MeetingPage() {
                   followHost={followHost}
                   onPageChange={(page) => {
                      setPresentState(prev => ({...prev, page}));
-                     // If we are currently "following" or are the "presenter", we might want to sync
-                     // But the user said "independent viewing". So we usually decouple on manual browse.
                      if (followHost) setFollowHost(false); 
-                     
-                     // If this was a global presentation and user is host/presenter, they might want to sync page?
-                     // Let's keep it simple: manual browse is always personal unless they "Present to All" again.
-                     // Wait, if they ARE presenting, they might want to sync. 
-                     // The user said: "any member can open it on their end without having to watch or follow moderator"
-                     // "this means tho that everybody should have a close button that is scoped only to them"
                   }}
                   onToggleFollow={() => {
                      setFollowHost(true);
-                     // Logic to fetch current host state if needed, but for now we rely on socket updates
                   }}
                   onStopPresenting={state?.role === 'host' ? () => {
                      socketRef.current.emit("present:update", { url: null, docId: null, page: 1, fileType: null });
@@ -431,7 +442,6 @@ export default function MeetingPage() {
             </div>
         )}
 
-        {/* Ensure Jitsi container adapts its width based on presentation */}
         <div 
           ref={jitsiContainerRef} 
           className="video-jitsi-container" 
@@ -464,7 +474,7 @@ export default function MeetingPage() {
             onOpenDocument={(doc) => {
                 const payload = { url: doc.fileUrl, docId: doc._id, page: 1, fileType: doc.fileType || 'pdf' };
                 setPresentState(payload);
-                setFollowHost(false); // When I open something, I stop following others
+                setFollowHost(false);
                 setShowDocs(false);
             }}
           />
@@ -479,7 +489,6 @@ export default function MeetingPage() {
           />
         )}
       </div>
-
 
       <CallToolbar
         displayName={displayName}
