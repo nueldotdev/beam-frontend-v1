@@ -20,13 +20,22 @@ const name = user?.profile?.firstName || "User";
 
 const profileCaps = name[0].toUpperCase() + name.slice(1);
 const profileInitials = name.split(" ").map(n => n[0]).join("").toUpperCase();
+const [sidebarOpen,setSidebarOpen] = useState(false)
 
   return (
    
     <div className="dashboard-wrapper">
-      <Sidebar />
+     <Sidebar 
+        isOpen={sidebarOpen}
+        closeSidebar={()=>setSidebarOpen(false)}
+      />
       <div className="dashboard">
       <div className="dashboard-header">
+
+        {/* Menu button */}
+        <button className='menu-btn' onClick={()=>setSidebarOpen(true)}>
+          ☰
+        </button>
         <h1>Welcome, <span>{profileCaps}</span></h1>
       {/* Profile section */}
       <div className="header-profile">

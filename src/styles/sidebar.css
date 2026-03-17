@@ -30,15 +30,6 @@
   gap: 8px;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: transparent;
-  font-weight: 700;
-  font-size: 18px;
-  flex: 1;
-}
 
 .logo.hide {
   display: flex;
@@ -48,7 +39,6 @@
 
 .logo-icon {
   align-self: center;
-  margin: auto;
   width: 50px;
   height: 50px;
 }
@@ -130,6 +120,12 @@
   justify-content: end;
   height: auto;
 }
+.sidebar-nav-bottom .nav-item{
+  display: flex;
+  flex-direction: row;
+  font-size: 16px;
+  padding: 8px 0px;
+}
 
 .nav-item.active .nav-icon {
   transform: scale(1.1);
@@ -156,6 +152,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.logo-text{
+  display: none;
 }
 
 .sidebar-nav-bottom .nav-icon{
@@ -248,57 +247,146 @@
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
   background: #555555;
 }
-
-@media (max-width: 1200px) {
-  .nav-label{
-    display: none;
-  }
-  
+.close-btn{
+ display: none;
 }
+
 
 /* Responsive */
 @media (max-width: 768px) {
-  /* .sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100%;
-    z-index: 1000;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
-  } */
+ /* Sidebar */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 250px;
+  background: white;
+  z-index: 2000;
 
-  .sidebar.collapsed {
-    transform: translateX(-100%);
-  }
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
 
-  .sidebar {
-  width: 50px;
-   overflow-x: hidden;   /* hide horizontal scroll */
-   white-space: nowrap;  /* prevent text from wrapping */
-   box-sizing: border-box;   
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+}
 
-  }
-
-
-  .nav-item {
-    gap: 10px;
-    align-items: center;
-  }
-  .logo-icon{
-    margin: auto;
-  }
-
-.nav-item.active {
-  padding: 8px 0px;
+.logo-text{
+  font-size: 18px;
+  font-family: "Gilroy", sans-serif;
+  color: #0e71eb;
+  text-align: center;
+}
+.logo{
+  display: flex;
+  justify-content:space-around;
+  gap: 12px;
+  color: transparent;
+  font-weight: 700;
+  font-size: 18px;
+  flex: 1;
+}
+.nav-item{
+  display: flex;
+  flex-direction: row;
+  padding: 8px 8px;
+}
+.nav-label{
+  margin: 4px;
+}
+.nav-icon{
+ gap: 32px;
+  margin-top: 4px;
+}
+.nav-item.active{
+  padding: 8px 16px;
+  text-align: left;
   background-color: #dde7ff;
   color: #0e71eb;
 
 }
+.close-btn{
+  display: block;
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.close-btn:hover{
+  color: #0e71eb;
+}
+
+/* When open */
+.sidebar.open {
+  transform: translateX(0);
+}
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+  }
+
+  /* .sidebar {
+  width: 100;
+   overflow-x: hidden;   
+   white-space: nowrap;  
+   box-sizing: border-box;   
+
+  } */
+
 
 
   .sidebar-header {
-    padding: 12px;
+    padding: 16px 12px;
+    display: flex;
+    align-items: center;        /* ← vertically center logo + close btn */
+    justify-content: space-between; /* ← push logo left, close btn right */
+    border-bottom: 1px solid #e5e7eb; /* ← subtle separator */
+    flex-shrink: 0;             /* ← don't let header compress */
   }
+
+  .logo {
+    display: flex;
+    align-items: center;        /* ← vertically align icon + text */
+    justify-content:flex-start; /* ← space between icon and text */
+    gap: 8px;                   /* ← tighter gap between icon and text */
+    flex: 1;
+    font-weight: 700;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-size: 18px;
+    margin: 2px 0 0 0;
+    font-family: "Gilroy", sans-serif;
+    color: #0e71eb;
+    text-align: left;           /* ← left-align since close btn handles right side */
+  }
+
+  .close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin-left: 0;             /* ← remove auto margin, space-between handles it */
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 6px;
+    flex-shrink: 0;             /* ← don't let it compress */
+    transition: background 0.2s;
+  }
+
+  .close-btn:hover {
+    background: #f3f4f6;        /* ← subtle hover background */
+    color: #0e71eb;
+  }
+
 
   
 
@@ -309,10 +397,9 @@
   .sidebar-profile {
     padding: 10px 12px;
   }
-  .nav-label {
-  display: none;
-}
+ 
 .sidebar-nav-bottom{
   font-size: 11px;
+
 }
 }

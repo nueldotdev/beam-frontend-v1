@@ -2,6 +2,7 @@ import React from "react";
 import "../../styles/meeting-styles/live.css";
 import { RiVoiceAiLine } from "react-icons/ri";
 import { AlignCenter } from "lucide-react";
+import Transciption from "../Transcription";
 
 function MeetingSidebar({
   tab,

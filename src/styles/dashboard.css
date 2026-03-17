@@ -1,6 +1,7 @@
 /* Dashboard Wrapper - Main Layout */
 .dashboard-wrapper {
   display: flex;
+   width:100%;
   height: 100vh;
   overflow: hidden;
   background: linear-gradient(90deg, hsla(223, 100%, 99%, 1) 0%, hsla(222, 100%, 93%, 1) 100%);
@@ -14,6 +15,7 @@
   flex-direction: column;
   flex: 1;
   height: 100vh;
+  width: 100%;
   background-color: transparent;
 }
 
@@ -39,6 +41,15 @@
   font-size: 24px;
   font-weight: 600; 
   font-family: "Gilroy", monospace;
+}
+.menu-btn{
+   margin-right: auto;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  display: none;
+  cursor: pointer;
+  padding: 6px;
 }
 .header-stats {
   display: flex;
@@ -97,6 +108,7 @@
 .home-container {
   flex: 1;
   width: 100%;
+  flex-direction: row;
   background: transparent;
   border-radius: 12px;
   display: flex;
@@ -488,74 +500,100 @@
   }
 }
 
-@media (max-width: 768px) {
- 
-  .dashboard {
-    height: auto; /* 🔑 CRITICAL */
-    min-height: 100vh;
+/* ─── 1200px and below ─── */
+@media (max-width: 1200px) {
+  .video-gallery {
+    width: 240px;
   }
-  .header-profile{
+  .control-bar {
+    gap: 16px;
+    padding: 12px 16px;
+  }
+  .controls-group {
+    gap: 8px;
+  }
+  .control-btn {
+    min-width: 50px;
+    padding: 6px 10px;
+  }
+}
+
+/* ─── 768px and below ─── */
+@media (max-width: 768px) {
+  .dashboard-wrapper {
+    flex-direction: column;
+    width: 100%;
+  }
+  .header-icon-btn {
+    display: none;
+  }
+  .menu-btn {
+    display: block;
+  }
+  .dashboard {
+    height: auto;
+    min-height: 100vh;
+    width: 100%;
+  }
+  .header-profile {
     justify-content: end;
     width: auto;
   }
-  .header-icon-btn{
+  .dashboard-header h1 {
+    font-size: 20px;
+  }
+  .dashboard-content span {
+    font-size: 20px;
+  }
+  .header-icon-btn {
     margin-top: 5px;
   }
-   .main-video-area {
+  .main-video-area {
     min-height: 240px;
   }
-  
   .video-gallery {
     width: 100%;
     height: 150px;
     max-height: 150px;
   }
-
   .gallery-grid {
     flex-direction: row;
     overflow-x: auto;
     overflow-y: hidden;
   }
-
   .gallery-item {
     width: 120px;
     height: 100%;
     flex-shrink: 0;
   }
-
   .control-bar {
     flex-wrap: wrap;
-    height: auto;
-    gap: 8px;
+    gap: 12px;
+    padding: 12px;
   }
-
-  .controls-group {
-    gap: 6px;
-  }
-
   .avatar-large {
     width: 120px;
     height: 120px;
     font-size: 48px;
   }
-}
+} /* ← closing brace was MISSING here */
 
+/* ─── 480px and below ─── */
 @media (max-width: 480px) {
-   .dashboard {
-    height: auto; /* 🔑 CRITICAL */
+  .dashboard {
+    height: auto;
     min-height: 100vh;
+    width: 100%;
   }
-.dashboard-content{
+  .dashboard-content {
     flex: 1;
     padding: 5px 0px;
     overflow-y: auto;
   }
-
-   .main-video-area {
+  .main-video-area {
     min-height: 240px;
-    
   }
-  .home-container{
+  .home-container {
     padding: 0;
   }
   .dashboard-header {
@@ -563,21 +601,17 @@
     gap: 12px;
     padding: 12px;
   }
-
   .control-btn .label {
     display: none;
   }
-
   .control-btn {
     min-width: 44px;
     padding: 8px;
   }
-
   .control-btn .icon {
     font-size: 18px;
   }
-
   .gallery-item {
     width: 100px;
   }
-}
+} /* ← closing brace */

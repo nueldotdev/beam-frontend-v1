@@ -140,6 +140,9 @@ export const MeetingEntry = () => {
   // ── Render ────────────────────────────────────────────────
   return (
     <div className="auth-container">
+      <div className="back-button">
+        <IoArrowBack className='back-icon' size={30} onClick={() => navigate('/dashboard/home')} />
+      </div>
       <div className="auth-card">
         <form
           onSubmit={(e) => {
